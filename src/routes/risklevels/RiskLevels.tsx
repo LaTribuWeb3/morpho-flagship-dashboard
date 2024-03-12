@@ -1,12 +1,36 @@
-import { Box, Grid, InputAdornment, MenuItem, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  FormControlLabel,
+  Grid,
+  InputAdornment,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+  Switch,
+  TextField,
+  Typography
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import DataService from '../../services/DataService';
 import { Pair } from '../../models/ApiData';
-import { FriendlyFormatNumber, sleep } from '../../utils/Utils';
+import { FriendlyFormatNumber, roundTo, sleep } from '../../utils/Utils';
 import { SimpleAlert } from '../../components/SimpleAlert';
 import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
-import { KinzaRiskParameter, KinzaRiskParameters } from '../../models/RiskData';
-import { useLocation } from 'react-router-dom';
+import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
+
+function ParameterButton(props: {
+  parameter: { ltv: number; bonus: number; visible: boolean };
+  handleParameterToggle: (parameter: { ltv: number; bonus: number; visible: boolean }) => void;
+}) {
+  return (
+    <FormControlLabel
+      label={`LTV: ${props.parameter.ltv * 100}% & Bonus: ${props.parameter.bonus / 100}%`}
+      control={
+        <Switch onChange={() => props.handleParameterToggle(props.parameter)} checked={props.parameter.visible} />
+      }
+    />
+  );
+}
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
@@ -14,41 +38,52 @@ export default function RiskLevels() {
   const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
-  const [capUSD, setCapUSD] = useState<number>(0);
-  const [capInKind, setCapInKind] = useState<number | undefined>(undefined);
+  const [supplyCap, setSupplyCap] = useState<number | undefined>(undefined);
   const [tokenPrice, setTokenPrice] = useState<number | undefined>(undefined);
-  const [parameters, setParameters] = useState<KinzaRiskParameters | undefined>(undefined);
-  const [riskParameter, setRiskParameter] = useState<KinzaRiskParameter | undefined>(undefined);
-  const [LTV, setLTV] = useState<number | undefined>(undefined);
-  const pathName = useLocation().pathname;
-  const navPair = pathName.split('/')[2]
-    ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
-    : undefined;
+  const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY);
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
   };
   const handleChangePair = (event: SelectChangeEvent) => {
     console.log(`handleChangePair: ${event.target.value}`);
-    const base = event.target.value.split('/')[0];
-    const quote = event.target.value.split('/')[1];
-    setSelectedPair({ base: base, quote: quote });
-    if (parameters) {
-      setRiskParameter(parameters[base][quote]);
-    }
+    setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
   };
-  const handleChangeCap = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target && event.target.value && tokenPrice) {
-      setCapInKind(Number(event.target.value));
-      setCapUSD(Number(event.target.value) * tokenPrice);
-    }
-  };
-  const handleChangeLTV = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target && event.target.value) {
-      const newLTV = Number(event.target.value);
-      if (newLTV >= 1 && newLTV < 100 - riskParameter!.bonus * 100) {
-        setLTV(newLTV);
-      }
+      setSupplyCap(Number(event.target.value));
+    }
+  };
+
+  const handleParameterToggle = (parameter: { ltv: number; bonus: number; visible: boolean }) => {
+    console.log('firing?');
+    /// if parameter is visible
+    if (parameter.visible) {
+      const newParameters = parameters.map((_) => {
+        if (_ === parameter) {
+          return {
+            ..._,
+            visible: false
+          };
+        } else {
+          return _;
+        }
+      });
+      setParameters(newParameters);
+    }
+    /// if parameter is not visible
+    if (!parameter.visible) {
+      const newParameters = parameters.map((_) => {
+        if (_ === parameter) {
+          return {
+            ..._,
+            visible: true
+          };
+        } else {
+          return _;
+        }
+      });
+      setParameters(newParameters);
     }
   };
 
@@ -58,50 +93,18 @@ export default function RiskLevels() {
     // Define an asynchronous function
     async function fetchData() {
       try {
-        const overviewData = await DataService.GetOverview();
-        const kinzaRiskParameters = {} as KinzaRiskParameters;
-        Object.keys(overviewData).forEach((symbol) => {
-          const riskLevelData = overviewData[symbol];
-          kinzaRiskParameters[symbol] = {};
-          riskLevelData.subMarkets.forEach((subMarket) => {
-            // Ensure the subMarket's quote does not already exist for robustness
-            if (!kinzaRiskParameters[symbol][subMarket.quote]) {
-              kinzaRiskParameters[symbol][subMarket.quote] = {
-                ltv: subMarket.LTV,
-                bonus: subMarket.liquidationBonus,
-                visible: true, // Set all to true as per instruction
-                supplyCapInUSD: subMarket.supplyCapUsd,
-                borrowCapInUSD: subMarket.borrowCapUsd,
-                basePrice: subMarket.basePrice
-              };
-            }
-          });
-        });
-        setParameters(kinzaRiskParameters);
-        const data = [];
-        for (const symbol of Object.keys(overviewData)) {
-          for (const subMarket of overviewData[symbol].subMarkets) {
-            data.push({ base: symbol, quote: subMarket.quote });
-          }
-        }
-        setAvailablePairs(data.sort((a, b) => a.base.localeCompare(b.base)));
+        const data = await DataService.GetAvailablePairs('all');
+        setAvailablePairs(
+          data.filter((_) => _.quote === 'USDC' || _.quote === 'WETH').sort((a, b) => a.base.localeCompare(b.base))
+        );
 
-        if (navPair && data.some((_) => _.base == navPair.base && _.quote == navPair.quote)) {
-          setSelectedPair(navPair);
+        const oldPair = selectedPair;
+
+        if (oldPair && data.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
+          setSelectedPair(oldPair);
         } else {
           setSelectedPair(data[0]);
         }
-        const pairSet = navPair ? navPair : data[0];
-        setRiskParameter(kinzaRiskParameters[pairSet.base][pairSet.quote]);
-        setLTV(kinzaRiskParameters[pairSet.base][pairSet.quote].ltv * 100);
-        const capUSDToSet = Math.min(
-          kinzaRiskParameters[pairSet.base][pairSet.quote].supplyCapInUSD,
-          kinzaRiskParameters[pairSet.base][pairSet.quote].borrowCapInUSD
-        );
-        setCapUSD(capUSDToSet);
-        const capInKindToSet = capUSDToSet / kinzaRiskParameters[pairSet.base][pairSet.quote].basePrice;
-        setCapInKind(capInKindToSet);
-
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -127,22 +130,17 @@ export default function RiskLevels() {
           return;
         }
         const data = await DataService.GetLiquidityData('all', selectedPair.base, selectedPair.quote);
+
         /// get token price
         const liquidityObjectToArray = Object.keys(data.liquidity).map((_) => parseInt(_));
-        const maxBlock = liquidityObjectToArray.at(-1)!.toString();
+        const maxBlock = Math.max.apply(null, liquidityObjectToArray).toString();
         const tokenPrice = data.liquidity[maxBlock].priceMedian;
-
-        if (selectedPair && capInKind && tokenPrice && parameters) {
-          const capUSDToSet = Math.min(
-            parameters[selectedPair.base][selectedPair.quote].supplyCapInUSD,
-            parameters[selectedPair.base][selectedPair.quote].borrowCapInUSD
-          );
-          setCapUSD(capUSDToSet);
-
-          const capInKindToSet = capUSDToSet / parameters[selectedPair.base][selectedPair.quote].basePrice;
-          setTokenPrice(parameters[selectedPair.base][selectedPair.quote].basePrice);
-
-          setCapInKind(Number(capInKindToSet.toFixed(2)));
+        setTokenPrice(tokenPrice);
+        if (selectedPair?.quote === 'USDC') {
+          setSupplyCap(roundTo(100_000_000 / tokenPrice, 0));
+        }
+        if (selectedPair?.quote === 'WETH') {
+          setSupplyCap(roundTo(50_000 / tokenPrice, 0));
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -160,20 +158,21 @@ export default function RiskLevels() {
       .catch(console.error);
   }, [selectedPair]);
 
-  if (!selectedPair || !tokenPrice || !capInKind) {
+  if (!selectedPair || !tokenPrice || !supplyCap) {
     return <RiskLevelGraphsSkeleton />;
   }
   return (
     <Box sx={{ mt: 10 }}>
-      {isLoading || !riskParameter || !LTV ? (
+      {isLoading ? (
         <RiskLevelGraphsSkeleton />
       ) : (
-        <Grid container spacing={1} alignItems="baseline" justifyContent='center'>
+        <Grid container spacing={1} alignItems="baseline">
           {/* First row: pairs select and slippage select */}
-          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <Grid item xs={6} sm={3}>
             <Typography textAlign={'right'}>Pair: </Typography>
+          </Grid>
+          <Grid item xs={6} sm={3}>
             <Select
-              sx={{ width: '95%' }}
               labelId="pair-select"
               id="pair-select"
               value={`${selectedPair.base}/${selectedPair.quote}`}
@@ -187,59 +186,32 @@ export default function RiskLevels() {
               ))}
             </Select>
           </Grid>
-          <Grid item xs={0} lg={1} sx={{ marginTop: '20px' }} />
-          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            <Typography textAlign={'right'}>LTV: </Typography>
-            <TextField
-              sx={{
-                width: '95%',
-                '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                  display: 'none'
-                },
-                '& input[type=number]': {
-                  MozAppearance: 'textfield'
-                }
-              }}
-              required
-              id="ltv-input"
-              type="number"
-              label={`Must be < ${100 - riskParameter.bonus * 100}%`}
-              onChange={handleChangeLTV}
-              value={LTV}
-              InputProps={{
-                endAdornment: <InputAdornment position="end">%</InputAdornment>
-              }}
-            />
+          <Grid item xs={6} sm={3}>
+            <Typography textAlign={'right'}>Supply Cap: </Typography>
           </Grid>
-          <Grid item xs={0} lg={1} sx={{ marginTop: '20px' }} />
-          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            <Typography textAlign={'right'}>Cap: </Typography>
+          <Grid item xs={6} sm={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
             <TextField
-              sx={{
-                '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                  display: 'none'
-                },
-                '& input[type=number]': {
-                  MozAppearance: 'textfield'
-                }
-              }}
               required
               id="supply-cap-input"
               type="number"
-              label={selectedPair.base}
-              value={capInKind}
-              onChange={handleChangeCap}
+              label="In Kind"
+              value={supplyCap}
+              onChange={handleChangeSupplyCap}
+              InputProps={{
+                endAdornment: <InputAdornment position="end">{selectedPair.base}</InputAdornment>
+              }}
             />
-            <Typography sx={{ ml: '10px' }}>${FriendlyFormatNumber(capUSD)}</Typography>
+            <Typography sx={{ ml: '10px' }}>
+              {FriendlyFormatNumber(supplyCap * tokenPrice)} {selectedPair.quote}
+            </Typography>
           </Grid>
-          <Grid item xs={12} lg={12}>
-            <RiskLevelGraphs
-              pair={selectedPair}
-              parameters={riskParameter}
-              LTV={LTV / 100}
-              supplyCap={capInKind}
-              platform={'all'}
-            />
+          <Grid item xs={12} lg={2} sx={{ marginTop: '20px' }}>
+            {parameters.map((_, index) => {
+              return <ParameterButton key={index} parameter={_} handleParameterToggle={handleParameterToggle} />;
+            })}
+          </Grid>
+          <Grid item xs={12} lg={10}>
+            <RiskLevelGraphs pair={selectedPair} parameters={parameters} supplyCap={supplyCap} platform={'all'} />
           </Grid>
         </Grid>
       )}
