@@ -8,6 +8,7 @@ export interface RiskLevelData {
 }
 
 export interface SubMarket {
+  liquidityInKind: number;
   quote: string;
   riskLevel: number;
   LTV: number;

@@ -58,7 +58,6 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                       <TableCell>Risk Level</TableCell>
                       <TableCell>LTV (%)</TableCell>
                       <TableCell>Supply Cap ($)</TableCell>
-                      <TableCell>Borrow Cap ($)</TableCell>
                       <TableCell>Volatility (%)</TableCell>
                       <TableCell>Liquidity ({baseSymbol})</TableCell>
                     </TableRow>
@@ -86,11 +85,8 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                           <TableCell>${FriendlyFormatNumber(subMarket.supplyCapUsd)}</TableCell>
                         </Tooltip>
 
-                        <Tooltip title={`${FriendlyFormatNumber(subMarket.borrowCapInKind)} ${subMarket.quote}`}>
-                          <TableCell>${FriendlyFormatNumber(subMarket.borrowCapUsd)}</TableCell>
-                        </Tooltip>
                         <TableCell>{(subMarket.volatility * 100).toFixed(2)}%</TableCell>
-                        <TableCell>{FriendlyFormatNumber(subMarket.liquidity)}</TableCell>
+                        <TableCell>{FriendlyFormatNumber(subMarket.liquidityInKind)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
