@@ -59,7 +59,7 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                       <TableCell>LTV (%)</TableCell>
                       <TableCell>Supply Cap ($)</TableCell>
                       <TableCell>Volatility (%)</TableCell>
-                      <TableCell>Liquidity ({baseSymbol})</TableCell>
+                      <TableCell>Liquidity (quote)</TableCell>
                     </TableRow>
                   ) : (
                     <TableRow>
@@ -85,12 +85,12 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                           <TableCell>${FriendlyFormatNumber(subMarket.supplyCapUsd)}</TableCell>
                         </Tooltip>
                         <TableCell>{(subMarket.volatility * 100).toFixed(2)}%</TableCell>
-                        <TableCell>{FriendlyFormatNumber(subMarket.liquidityInKind)}</TableCell>
+                        <TableCell>{FriendlyFormatNumber(subMarket.liquidityInKind)} {subMarket.quote}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 ) : (
-                  
+
                   <TableBody>
                     {row.subMarkets.map((subMarket) => (
                       <TableRow key={subMarket.quote}>
