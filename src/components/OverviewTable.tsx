@@ -84,13 +84,13 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                         <Tooltip title={`${FriendlyFormatNumber(subMarket.supplyCapInKind)} ${baseSymbol}`}>
                           <TableCell>${FriendlyFormatNumber(subMarket.supplyCapUsd)}</TableCell>
                         </Tooltip>
-
                         <TableCell>{(subMarket.volatility * 100).toFixed(2)}%</TableCell>
                         <TableCell>{FriendlyFormatNumber(subMarket.liquidityInKind)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 ) : (
+                  
                   <TableBody>
                     {row.subMarkets.map((subMarket) => (
                       <TableRow key={subMarket.quote}>
