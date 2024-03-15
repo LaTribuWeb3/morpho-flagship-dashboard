@@ -38,7 +38,7 @@ export default class DataService {
       'GetOverview',
       async () => {
         // await sleep(500); // add sleep to simulate waiting
-        const fullUrl = apiUrl + `/api/dashboard/kinza-overview`;
+        const fullUrl = apiUrl + `/api/dashboard/morpho-overview`;
         try {
           const response: AxiosResponse<OverviewData> = await axios.get(fullUrl);
           console.log(`found ${Object.keys(response.data).length} overview data`);
