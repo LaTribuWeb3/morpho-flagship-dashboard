@@ -32,7 +32,7 @@ export default function RiskLevels() {
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
   const pathName = useLocation().pathname;
   const navPair = pathName.split('/')[2]
-    ? { base: pathName.split('/')[2].split('-')[1], quote: pathName.split('/')[2].split('-')[0] }
+    ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
     : undefined;
   const navLTV = pathName.split('/')[3]
     ? pathName.split('/')[3]
@@ -80,7 +80,7 @@ export default function RiskLevels() {
         const morphoPairs: string[] = [];
         for (const market in morphoData) {
           morphoData[market].subMarkets.forEach(subMarket => {
-                morphoPairs.push(`${subMarket.quote}/${market}`);
+                morphoPairs.push(`${market}/${subMarket.quote}`);
           });
       }
       const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
@@ -214,7 +214,7 @@ export default function RiskLevels() {
               required
               id="supply-cap-input"
               type="number"
-              label={`Supply Cap in ${selectedPair.quote}`}
+              label={`Supply Cap in ${selectedPair.base}`}
               value={supplyCap}
               onChange={handleChangeSupplyCap}
             />
