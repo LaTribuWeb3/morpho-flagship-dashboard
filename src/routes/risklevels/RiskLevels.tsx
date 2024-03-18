@@ -93,6 +93,7 @@ export default function RiskLevels() {
         if (navPair && filteredPairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
+            setSelectedLTV(navLTV);
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === navLTV);
             if (foundParam) {
               setSelectedBonus(foundParam.bonus);
@@ -111,7 +112,7 @@ export default function RiskLevels() {
           const firstMarketKey = Object.keys(morphoData)[0];
           const firstMarket = morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
-          const pairToSet = { base: firstSubMarket.quote, quote: firstMarketKey };
+          const pairToSet = { base: firstMarketKey, quote: firstSubMarket.quote};
           setSelectedPair(pairToSet);
           setSelectedLTV(firstSubMarket.LTV.toString());
           setSelectedBonus(firstSubMarket.liquidationBonus);
