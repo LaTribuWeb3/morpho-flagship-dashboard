@@ -25,7 +25,9 @@ export default function RiskLevels() {
   const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
-  const [supplyCap, setSupplyCap] = useState<number | undefined>(undefined);
+  const [morphoData, setMorphoData] = useState<OverviewData>({});
+  const [supplyCapUsd, setSupplyCapUsd] = useState<number | undefined>(undefined);
+  const [supplyCapInKind, setSupplyCapInKind] = useState<number | undefined>(undefined);
   const [tokenPrice, setTokenPrice] = useState<number | undefined>(undefined);
   const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY[1]);
   const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
@@ -42,12 +44,25 @@ export default function RiskLevels() {
     setOpenAlert(false);
   };
   const handleChangePair = (event: SelectChangeEvent) => {
-    console.log(`handleChangePair: ${event.target.value}`);
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
+    const matchingSubMarket = morphoData[event.target.value.split('/')[0]].subMarkets.find(
+      (subMarket) => subMarket.quote === event.target.value.split('/')[1]
+    );
+    if (matchingSubMarket) {
+      setSelectedLTV(matchingSubMarket.LTV.toString());
+      setSelectedBonus(matchingSubMarket.liquidationBonus * 10000);
+      setParameters({ ltv: matchingSubMarket.LTV, bonus: matchingSubMarket.liquidationBonus * 10000 });
+      setSupplyCapUsd(matchingSubMarket.supplyCapUsd);
+      setSupplyCapInKind(matchingSubMarket.supplyCapInKind);
+      setTokenPrice(matchingSubMarket.quotePrice);
+    }
   };
   const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target && event.target.value) {
-      setSupplyCap(Number(event.target.value));
+      setSupplyCapInKind(Number(event.target.value));
+      if (tokenPrice) {
+        setSupplyCapUsd(Number(event.target.value) * tokenPrice);
+      }
     }
   };
   const handleLTVChange = (event: SelectChangeEvent) => {
@@ -67,6 +82,7 @@ export default function RiskLevels() {
       try {
         const data = await DataService.GetAvailablePairs('all');
         const morphoData: OverviewData = await DataService.GetOverview();
+        setMorphoData(morphoData);
         const morphoPairs: string[] = [];
         for (const market in morphoData) {
           morphoData[market].subMarkets.forEach((subMarket) => {
@@ -74,7 +90,6 @@ export default function RiskLevels() {
           });
         }
         const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
-        console.log(filteredPairs);
 
         setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
 
@@ -87,7 +102,8 @@ export default function RiskLevels() {
               setSelectedBonus(foundParam.bonus);
               setParameters(foundParam);
               if (navSupplyCap && navBasePrice) {
-                setSupplyCap((navSupplyCap / navBasePrice).toFixed(0) as unknown as number);
+                setSupplyCapInKind(navSupplyCap);
+                setSupplyCapUsd((navSupplyCap * navBasePrice).toFixed(0) as unknown as number);
               }
               setTokenPrice(navBasePrice);
             }
@@ -101,7 +117,8 @@ export default function RiskLevels() {
           setSelectedLTV(firstSubMarket.LTV.toString());
           setSelectedBonus(firstSubMarket.liquidationBonus * 10000);
           setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 });
-          setSupplyCap(firstSubMarket.supplyCapInKind);
+          setSupplyCapUsd(firstSubMarket.supplyCapUsd);
+          setSupplyCapInKind(firstSubMarket.supplyCapInKind);
           setTokenPrice(firstSubMarket.quotePrice);
         }
 
@@ -122,7 +139,7 @@ export default function RiskLevels() {
       .catch(console.error);
   }, []);
 
-  if (!selectedPair || !tokenPrice || !supplyCap) {
+  if (!selectedPair || !tokenPrice || !supplyCapUsd) {
     return <RiskLevelGraphsSkeleton />;
   }
   return (
@@ -222,14 +239,14 @@ export default function RiskLevels() {
               required
               id="supply-cap-input"
               type="number"
-              label={`Supply Cap in ${selectedPair.quote}`}
-              value={supplyCap}
+              label={`Supply Cap in ${selectedPair.base}`}
+              value={supplyCapInKind}
               onChange={handleChangeSupplyCap}
             />
-            <Typography sx={{ ml: '10px' }}>${FriendlyFormatNumber(supplyCap * tokenPrice)}</Typography>
+            <Typography sx={{ ml: '10px' }}>${FriendlyFormatNumber(supplyCapUsd)}</Typography>
           </Grid>
           <Grid item xs={12} lg={10}>
-            <RiskLevelGraphs pair={selectedPair} parameters={parameters} supplyCap={supplyCap} platform={'all'} />
+            <RiskLevelGraphs pair={selectedPair} parameters={parameters} supplyCap={supplyCapUsd} platform={'all'} />
           </Grid>
         </Grid>
       )}

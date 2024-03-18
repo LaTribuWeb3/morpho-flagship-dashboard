@@ -77,7 +77,7 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                         <TableCell component="th" scope="row">
                           <Typography
                             component={RouterLink}
-                            to={`/risklevels/${baseSymbol}-${subMarket.quote}/${subMarket.LTV}/${subMarket.supplyCapUsd}/${subMarket.basePrice}`}
+                            to={`/risklevels/${baseSymbol}-${subMarket.quote}/${subMarket.LTV}/${subMarket.supplyCapInKind}/${subMarket.basePrice}`}
                           >
                             {baseSymbol}/{subMarket.quote}
                           </Typography>
