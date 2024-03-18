@@ -1,8 +1,10 @@
 import {
   Box,
+  FormControl,
   FormControlLabel,
   Grid,
   InputAdornment,
+  InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
@@ -18,20 +20,6 @@ import { SimpleAlert } from '../../components/SimpleAlert';
 import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 
-function ParameterButton(props: {
-  parameter: { ltv: number; bonus: number; visible: boolean };
-  handleParameterToggle: (parameter: { ltv: number; bonus: number; visible: boolean }) => void;
-}) {
-  return (
-    <FormControlLabel
-      label={`LTV: ${props.parameter.ltv * 100}% & Bonus: ${props.parameter.bonus / 100}%`}
-      control={
-        <Switch onChange={() => props.handleParameterToggle(props.parameter)} checked={props.parameter.visible} />
-      }
-    />
-  );
-}
-
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
   const [availablePairs, setAvailablePairs] = useState<Pair[]>([]);
@@ -41,7 +29,8 @@ export default function RiskLevels() {
   const [supplyCap, setSupplyCap] = useState<number | undefined>(undefined);
   const [tokenPrice, setTokenPrice] = useState<number | undefined>(undefined);
   const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY);
-
+  const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
+  const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
   const handleCloseAlert = () => {
     setOpenAlert(false);
   };
@@ -52,6 +41,18 @@ export default function RiskLevels() {
   const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target && event.target.value) {
       setSupplyCap(Number(event.target.value));
+    }
+  };
+  const handleLTVChange = (event: SelectChangeEvent) => {
+    setSelectedLTV(event.target.value);
+    const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === event.target.value);
+    if (foundParam) {
+      setSelectedBonus(foundParam.bonus);
+      const updatedParameters = parameters.map((param) => ({
+        ...param,
+        visible: param.ltv.toString() === event.target.value,
+      }));
+      setParameters(updatedParameters);
     }
   };
 
@@ -166,17 +167,16 @@ export default function RiskLevels() {
       {isLoading ? (
         <RiskLevelGraphsSkeleton />
       ) : (
-        <Grid container spacing={1} alignItems="baseline">
+        <Grid container spacing={1} alignItems="baseline" justifyContent='center'>
           {/* First row: pairs select and slippage select */}
-          <Grid item xs={6} sm={3}>
-            <Typography textAlign={'right'}>Pair: </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
+          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'}}>
+            <FormControl>
+            <InputLabel id="pair-select-label">Pair</InputLabel>
             <Select
-              labelId="pair-select"
+              labelId="pair-select-label"
               id="pair-select"
-              value={`${selectedPair.base}/${selectedPair.quote}`}
               label="Pair"
+              value={`${selectedPair.base}/${selectedPair.quote}`}
               onChange={handleChangePair}
             >
               {availablePairs.map((pair, index) => (
@@ -185,30 +185,57 @@ export default function RiskLevels() {
                 </MenuItem>
               ))}
             </Select>
+            </FormControl>
           </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography textAlign={'right'}>Supply Cap: </Typography>
+          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'  }}>
+            <FormControl>
+            <InputLabel id="ltv-select-label">LTV</InputLabel>
+              <Select
+                labelId="ltv-select-label"
+                id="ltv-select"
+                value={selectedLTV}
+                label="LTV"
+              variant="outlined"
+              onChange={handleLTVChange}
+              >
+                {MORPHO_RISK_PARAMETERS_ARRAY.map((param, index) => (
+                  <MenuItem key={index} value={(param.ltv).toString()}>
+                    {param.ltv * 100}%
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
-          <Grid item xs={6} sm={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'  }}>
             <TextField
+              id="bonus-value"
+              label="Liquidation Bonus"
+              variant="outlined"
+              disabled
+              value={`${selectedBonus / 100}%`}
+              InputProps={{
+                readOnly: true, // Makes the TextField read-only
+              }}
+            />
+          </Grid>
+          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'  }}>
+            <TextField
+              sx={{
+                '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                  display: 'none'
+                },
+                '& input[type=number]': {
+                  MozAppearance: 'textfield'
+                }
+              }}
               required
               id="supply-cap-input"
               type="number"
-              label="In Kind"
+              label={`Supply Cap in ${selectedPair.base}`}
               value={supplyCap}
               onChange={handleChangeSupplyCap}
-              InputProps={{
-                endAdornment: <InputAdornment position="end">{selectedPair.base}</InputAdornment>
-              }}
             />
-            <Typography sx={{ ml: '10px' }}>
-              {FriendlyFormatNumber(supplyCap * tokenPrice)} {selectedPair.quote}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} lg={2} sx={{ marginTop: '20px' }}>
-            {parameters.map((_, index) => {
-              return <ParameterButton key={index} parameter={_} handleParameterToggle={handleParameterToggle} />;
-            })}
+            <Typography sx={{ ml: '10px' }}>${FriendlyFormatNumber(supplyCap * tokenPrice)}</Typography>
           </Grid>
           <Grid item xs={12} lg={10}>
             <RiskLevelGraphs pair={selectedPair} parameters={parameters} supplyCap={supplyCap} platform={'all'} />
