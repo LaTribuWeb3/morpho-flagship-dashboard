@@ -4,7 +4,7 @@ import DataService from '../../services/DataService';
 import { SimpleAlert } from '../../components/SimpleAlert';
 import { DATA_SOURCES } from '../../utils/Constants';
 import { LastUpdateData } from '../../models/LastUpdateData';
-import { LastUpdateCard, } from '../../components/LastUpdateCard';
+import { LastUpdateCard } from '../../components/LastUpdateCard';
 
 function LastUpdateSkeleton() {
   const nbSkeletons = DATA_SOURCES.length - 1; // -1 because "all" sources will not be displaying data
@@ -61,7 +61,7 @@ export function LastUpdate() {
   }, []); // Empty dependency array means this effect runs once, similar to componentDidMount
 
   return (
-    <Grid sx={{ mt: 10, ml:1, width: "99%" }} container spacing={2}>
+    <Grid sx={{ mt: 10, ml: 1, width: '99%' }} container spacing={2}>
       {/* <Grid item xs={12}>
         <Container sx={{ textAlign: 'center' }}>
           <Typography variant="h4" gutterBottom>

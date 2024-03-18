@@ -34,15 +34,9 @@ export default function RiskLevels() {
   const navPair = pathName.split('/')[2]
     ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
     : undefined;
-  const navLTV = pathName.split('/')[3]
-    ? pathName.split('/')[3]
-    : undefined;
-  const navSupplyCap = pathName.split('/')[4]
-    ? Number(pathName.split('/')[4])
-    : undefined;
-  const navBasePrice = pathName.split('/')[5]
-    ? Number(pathName.split('/')[5])
-    : undefined;
+  const navLTV = pathName.split('/')[3] ? pathName.split('/')[3] : undefined;
+  const navSupplyCap = pathName.split('/')[4] ? Number(pathName.split('/')[4]) : undefined;
+  const navBasePrice = pathName.split('/')[5] ? Number(pathName.split('/')[5]) : undefined;
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
@@ -58,7 +52,7 @@ export default function RiskLevels() {
   };
   const handleLTVChange = (event: SelectChangeEvent) => {
     setSelectedLTV(event.target.value);
-    const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === event.target.value);
+    const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === event.target.value);
     if (foundParam) {
       setSelectedBonus(foundParam.bonus);
       setParameters(foundParam);
@@ -72,31 +66,29 @@ export default function RiskLevels() {
     async function fetchData() {
       try {
         const data = await DataService.GetAvailablePairs('all');
-        const morphoData:OverviewData = await DataService.GetOverview();
+        const morphoData: OverviewData = await DataService.GetOverview();
         const morphoPairs: string[] = [];
         for (const market in morphoData) {
-          morphoData[market].subMarkets.forEach(subMarket => {
-                morphoPairs.push(`${market}/${subMarket.quote}`);
+          morphoData[market].subMarkets.forEach((subMarket) => {
+            morphoPairs.push(`${market}/${subMarket.quote}`);
           });
-      }
-      const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
-      console.log(filteredPairs);
+        }
+        const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
+        console.log(filteredPairs);
 
-        setAvailablePairs(
-          filteredPairs.sort((a, b) => a.base.localeCompare(b.base))
-        );
+        setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
 
         if (navPair && filteredPairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
             setSelectedLTV(navLTV);
-            const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === navLTV);
+            const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === navLTV);
             if (foundParam) {
               setSelectedBonus(foundParam.bonus);
               setParameters(foundParam);
-              if(navSupplyCap && navBasePrice) {
-              setSupplyCap((navSupplyCap / navBasePrice).toFixed(0) as unknown as number);
-            }
+              if (navSupplyCap && navBasePrice) {
+                setSupplyCap((navSupplyCap / navBasePrice).toFixed(0) as unknown as number);
+              }
               setTokenPrice(navBasePrice);
             }
           }
@@ -104,14 +96,13 @@ export default function RiskLevels() {
           const firstMarketKey = Object.keys(morphoData)[0];
           const firstMarket = morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
-          const pairToSet = { base: firstMarketKey, quote: firstSubMarket.quote};
+          const pairToSet = { base: firstMarketKey, quote: firstSubMarket.quote };
           setSelectedPair(pairToSet);
           setSelectedLTV(firstSubMarket.LTV.toString());
           setSelectedBonus(firstSubMarket.liquidationBonus * 10000);
-          setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000});
+          setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 });
           setSupplyCap(firstSubMarket.supplyCapInKind);
           setTokenPrice(firstSubMarket.quotePrice);
-
         }
 
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
@@ -139,46 +130,67 @@ export default function RiskLevels() {
       {isLoading ? (
         <RiskLevelGraphsSkeleton />
       ) : (
-        <Grid container spacing={1} alignItems="baseline" justifyContent='center'>
+        <Grid container spacing={1} alignItems="baseline" justifyContent="center">
           {/* First row: pairs select and slippage select */}
-          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'}}>
+          <Grid
+            item
+            xs={8}
+            sm={6}
+            md={4}
+            lg={3}
+            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
+          >
             <FormControl>
-            <InputLabel id="pair-select-label">Pair</InputLabel>
-            <Select
-              labelId="pair-select-label"
-              id="pair-select"
-              label="Pair"
-              value={`${selectedPair.base}/${selectedPair.quote}`}
-              onChange={handleChangePair}
-            >
-              {availablePairs.map((pair, index) => (
-                <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
-                  {`${pair.base}/${pair.quote}`}
-                </MenuItem>
-              ))}
-            </Select>
+              <InputLabel id="pair-select-label">Pair</InputLabel>
+              <Select
+                labelId="pair-select-label"
+                id="pair-select"
+                label="Pair"
+                value={`${selectedPair.base}/${selectedPair.quote}`}
+                onChange={handleChangePair}
+              >
+                {availablePairs.map((pair, index) => (
+                  <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
+                    {`${pair.base}/${pair.quote}`}
+                  </MenuItem>
+                ))}
+              </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'  }}>
+          <Grid
+            item
+            xs={8}
+            sm={6}
+            md={4}
+            lg={3}
+            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
+          >
             <FormControl>
-            <InputLabel id="ltv-select-label">LTV</InputLabel>
+              <InputLabel id="ltv-select-label">LTV</InputLabel>
               <Select
                 labelId="ltv-select-label"
                 id="ltv-select"
                 value={selectedLTV}
                 label="LTV"
-              variant="outlined"
-              onChange={handleLTVChange}
+                variant="outlined"
+                onChange={handleLTVChange}
               >
                 {MORPHO_RISK_PARAMETERS_ARRAY.map((param, index) => (
-                  <MenuItem key={index} value={(param.ltv).toString()}>
+                  <MenuItem key={index} value={param.ltv.toString()}>
                     {param.ltv * 100}%
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'  }}>
+          <Grid
+            item
+            xs={8}
+            sm={6}
+            md={4}
+            lg={3}
+            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
+          >
             <TextField
               id="bonus-value"
               label="Liquidation Bonus"
@@ -186,11 +198,18 @@ export default function RiskLevels() {
               disabled
               value={`${selectedBonus / 100}%`}
               InputProps={{
-                readOnly: true, // Makes the TextField read-only
+                readOnly: true // Makes the TextField read-only
               }}
             />
           </Grid>
-          <Grid item xs={8} sm={6} md={4} lg={3} sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt:1, justifyContent:'center'  }}>
+          <Grid
+            item
+            xs={8}
+            sm={6}
+            md={4}
+            lg={3}
+            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
+          >
             <TextField
               sx={{
                 '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {

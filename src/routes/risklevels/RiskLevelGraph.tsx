@@ -10,7 +10,7 @@ export interface RiskLevelGraphsInterface {
   pair: Pair;
   platform: string;
   supplyCap: number;
-  parameters: { ltv: number; bonus: number};
+  parameters: { ltv: number; bonus: number };
 }
 
 export interface GraphDataAtBlock {
@@ -71,21 +71,21 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
           const currentBlockData: GraphDataAtBlock = {
             blockNumber: Number(block)
           };
-              const liquidationBonus = props.parameters.bonus;
-              const liquidity = blockData.avgSlippageMap[liquidationBonus].base;
-              if (liquidity <= 0) {
-                continue;
-              }
-              const ltv = props.parameters.ltv;
-              const borrowCap = props.supplyCap;
-              currentBlockData[`${props.parameters.bonus}_${props.parameters.ltv}`] = findRiskLevelFromParameters(
-                blockData.volatility,
-                liquidity,
-                liquidationBonus / 10000,
-                ltv,
-                borrowCap
-              );
-            graphData.push(currentBlockData);
+          const liquidationBonus = props.parameters.bonus;
+          const liquidity = blockData.avgSlippageMap[liquidationBonus].base;
+          if (liquidity <= 0) {
+            continue;
+          }
+          const ltv = props.parameters.ltv;
+          const borrowCap = props.supplyCap;
+          currentBlockData[`${props.parameters.bonus}_${props.parameters.ltv}`] = findRiskLevelFromParameters(
+            blockData.volatility,
+            liquidity,
+            liquidationBonus / 10000,
+            ltv,
+            borrowCap
+          );
+          graphData.push(currentBlockData);
         }
         graphData.sort((a, b) => a.blockNumber - b.blockNumber);
         setGraphData(graphData);
@@ -133,11 +133,13 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
               xAxisData={graphData.map((_) => _.blockNumber)}
               xAxisLabel="Date"
               leftYAxis={{ formatter: FriendlyFormatNumber }}
-              leftAxisSeries={[{
-                label: `LTV: ${props.parameters.ltv * 100}% & Bonus: ${props.parameters.bonus / 100}%`,
-                data: graphData.map((block) => block[`${props.parameters.bonus}_${props.parameters.ltv}`]),
-                formatter: FriendlyFormatNumber
-              }]}
+              leftAxisSeries={[
+                {
+                  label: `LTV: ${props.parameters.ltv * 100}% & Bonus: ${props.parameters.bonus / 100}%`,
+                  data: graphData.map((block) => block[`${props.parameters.bonus}_${props.parameters.ltv}`]),
+                  formatter: FriendlyFormatNumber
+                }
+              ]}
             />
           </Grid>
 

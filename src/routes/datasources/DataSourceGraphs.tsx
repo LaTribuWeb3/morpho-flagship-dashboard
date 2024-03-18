@@ -42,7 +42,7 @@ export function DataSourceGraphs(props: DataSourceGraphsInterface) {
         const data = await DataService.GetLiquidityData(props.platform, props.pair.base, props.pair.quote);
 
         setLiquidityData(data);
-        if(Object.values(data.liquidity).some(_ => _.volatility == -1)) {
+        if (Object.values(data.liquidity).some((_) => _.volatility == -1)) {
           setShowVolatility(false);
         } else {
           setShowVolatility(true);
@@ -100,7 +100,7 @@ export function DataSourceGraphs(props: DataSourceGraphsInterface) {
               xAxisData={Object.keys(liquidityData.liquidity).map((_) => Number(_))}
               xAxisLabel="Date"
               leftYAxis={{ min: 0, formatter: FriendlyFormatNumber, label: props.pair.base }}
-              rightYAxis={{ min: 0, formatter: FriendlyFormatNumber, label:props.pair.quote}}
+              rightYAxis={{ min: 0, formatter: FriendlyFormatNumber, label: props.pair.quote }}
               leftAxisSeries={[
                 {
                   label: `Amount ${props.pair.base} sold`,
@@ -118,59 +118,61 @@ export function DataSourceGraphs(props: DataSourceGraphsInterface) {
             />
           </Grid>
 
-
-          {showVolatility ? 
-          <Grid item xs={12} lg={6}>
-            <Graph
-              title={`${props.pair.base}/${props.pair.quote} price and volatility`}
-              xAxisData={Object.keys(liquidityData.liquidity).map((_) => Number(_))}
-              xAxisLabel="Date"
-              leftYAxis={{
-                max: Math.max(...Object.values(liquidityData.liquidity).map((_) => _.priceMax)) * 1.1,
-                min: Math.min(...Object.values(liquidityData.liquidity).map((_) => _.priceMin)) * 0.9,
-                formatter: FriendlyFormatNumber,
-                label: 'price'
-              }}
-              rightYAxis={{
-                min: 0,
-                max: Math.max(
-                  10 / 100,
-                  Math.max(...Object.values(liquidityData.liquidity).map((_) => _.volatility)) * 1.1
-                ),
-                formatter: PercentageFormatter,
-                label: 'volatility'
-              }}
-              leftAxisSeries={[
-                {
-                  label: `price median (1d)`,
-                  data: Object.values(liquidityData.liquidity).map((_) => _.priceMedian),
-                  formatter: FriendlyFormatNumber
-                },
-                {
-                  label: `price min (1d)`,
-                  data: Object.values(liquidityData.liquidity).map((_) => _.priceMin),
-                  formatter: FriendlyFormatNumber
-                },
-                {
-                  label: `price max (1d)`,
-                  data: Object.values(liquidityData.liquidity).map((_) => _.priceMax),
-                  formatter: FriendlyFormatNumber
-                }
-              ]}
-              rightAxisSeries={[
-                {
-                  label: 'volatility',
-                  data: Object.values(liquidityData.liquidity).map((_) => _.volatility),
-                  formatter: PercentageFormatter
-                }
-              ]}
-            />
-          </Grid>
-          : <Grid item xs={12} lg={6}>
-             <Box sx={{textAlign: 'center', mt: 10}}>No volatility data to show.</Box>
-             <Box sx={{textAlign: 'center'}}>Liquidity is computed using aggregated routes, no direct route to compute price related data</Box>
+          {showVolatility ? (
+            <Grid item xs={12} lg={6}>
+              <Graph
+                title={`${props.pair.base}/${props.pair.quote} price and volatility`}
+                xAxisData={Object.keys(liquidityData.liquidity).map((_) => Number(_))}
+                xAxisLabel="Date"
+                leftYAxis={{
+                  max: Math.max(...Object.values(liquidityData.liquidity).map((_) => _.priceMax)) * 1.1,
+                  min: Math.min(...Object.values(liquidityData.liquidity).map((_) => _.priceMin)) * 0.9,
+                  formatter: FriendlyFormatNumber,
+                  label: 'price'
+                }}
+                rightYAxis={{
+                  min: 0,
+                  max: Math.max(
+                    10 / 100,
+                    Math.max(...Object.values(liquidityData.liquidity).map((_) => _.volatility)) * 1.1
+                  ),
+                  formatter: PercentageFormatter,
+                  label: 'volatility'
+                }}
+                leftAxisSeries={[
+                  {
+                    label: `price median (1d)`,
+                    data: Object.values(liquidityData.liquidity).map((_) => _.priceMedian),
+                    formatter: FriendlyFormatNumber
+                  },
+                  {
+                    label: `price min (1d)`,
+                    data: Object.values(liquidityData.liquidity).map((_) => _.priceMin),
+                    formatter: FriendlyFormatNumber
+                  },
+                  {
+                    label: `price max (1d)`,
+                    data: Object.values(liquidityData.liquidity).map((_) => _.priceMax),
+                    formatter: FriendlyFormatNumber
+                  }
+                ]}
+                rightAxisSeries={[
+                  {
+                    label: 'volatility',
+                    data: Object.values(liquidityData.liquidity).map((_) => _.volatility),
+                    formatter: PercentageFormatter
+                  }
+                ]}
+              />
             </Grid>
-            }
+          ) : (
+            <Grid item xs={12} lg={6}>
+              <Box sx={{ textAlign: 'center', mt: 10 }}>No volatility data to show.</Box>
+              <Box sx={{ textAlign: 'center' }}>
+                Liquidity is computed using aggregated routes, no direct route to compute price related data
+              </Box>
+            </Grid>
+          )}
         </Grid>
       )}
 

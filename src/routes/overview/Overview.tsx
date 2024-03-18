@@ -41,7 +41,7 @@ export function Overview() {
         const sortedOverviewData: OverviewData = entries.reduce((acc, [symbol, data]) => {
           acc[symbol] = data;
           return acc;
-      }, {} as OverviewData);
+        }, {} as OverviewData);
 
         setOverviewData(sortedOverviewData);
         setIsLoading(false);
@@ -68,10 +68,7 @@ export function Overview() {
 
   return (
     <Grid sx={{ mt: 10 }} container spacing={2}>
-      {isLoading ? <OverviewSkeleton /> 
-      : 
-      <OverviewTable data={overviewData} />
-      }
+      {isLoading ? <OverviewSkeleton /> : <OverviewTable data={overviewData} />}
 
       <SimpleAlert alertMsg={alertMsg} handleCloseAlert={handleCloseAlert} openAlert={openAlert} />
     </Grid>

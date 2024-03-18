@@ -73,9 +73,12 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                 {screenBigEnough ? (
                   <TableBody>
                     {row.subMarkets.map((subMarket) => (
-                      <TableRow key={(subMarket.quote + String(subMarket.LTV))}>
+                      <TableRow key={subMarket.quote + String(subMarket.LTV)}>
                         <TableCell component="th" scope="row">
-                          <Typography component={RouterLink} to={`/risklevels/${baseSymbol}-${subMarket.quote}/${subMarket.LTV}/${subMarket.supplyCapUsd}/${subMarket.basePrice}`}>
+                          <Typography
+                            component={RouterLink}
+                            to={`/risklevels/${baseSymbol}-${subMarket.quote}/${subMarket.LTV}/${subMarket.supplyCapUsd}/${subMarket.basePrice}`}
+                          >
                             {baseSymbol}/{subMarket.quote}
                           </Typography>
                         </TableCell>
@@ -85,15 +88,16 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                           <TableCell>${FriendlyFormatNumber(subMarket.supplyCapUsd)}</TableCell>
                         </Tooltip>
                         <TableCell>{(subMarket.volatility * 100).toFixed(2)}%</TableCell>
-                        <TableCell>{FriendlyFormatNumber(subMarket.liquidityInKind)} {subMarket.quote}</TableCell>
+                        <TableCell>
+                          {FriendlyFormatNumber(subMarket.liquidityInKind)} {subMarket.quote}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 ) : (
-
                   <TableBody>
                     {row.subMarkets.map((subMarket) => (
-                      <TableRow key={(subMarket.quote + String(subMarket.LTV))}>
+                      <TableRow key={subMarket.quote + String(subMarket.LTV)}>
                         <TableCell component="th" scope="row">
                           <Typography component={RouterLink} to={`/risklevels/${baseSymbol}-${subMarket.quote}`}>
                             {baseSymbol}/{subMarket.quote}
