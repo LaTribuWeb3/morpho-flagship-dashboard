@@ -204,7 +204,7 @@ export default function RiskLevels() {
               required
               id="supply-cap-input"
               type="number"
-              label={`Supply Cap in ${selectedPair.base}`}
+              label={`Supply Cap in ${selectedPair.quote}`}
               value={supplyCap}
               onChange={handleChangeSupplyCap}
             />
