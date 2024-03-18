@@ -27,7 +27,7 @@ export default function RiskLevels() {
   const [alertMsg, setAlertMsg] = useState('');
   const [supplyCap, setSupplyCap] = useState<number | undefined>(undefined);
   const [tokenPrice, setTokenPrice] = useState<number | undefined>(undefined);
-  const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY);
+  const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY[1]);
   const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
   const pathName = useLocation().pathname;
@@ -61,11 +61,7 @@ export default function RiskLevels() {
     const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === event.target.value);
     if (foundParam) {
       setSelectedBonus(foundParam.bonus);
-      const updatedParameters = parameters.map((param) => ({
-        ...param,
-        visible: param.ltv.toString() === event.target.value,
-      }));
-      setParameters(updatedParameters);
+      setParameters(foundParam);
     }
   };
 
@@ -97,11 +93,7 @@ export default function RiskLevels() {
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === navLTV);
             if (foundParam) {
               setSelectedBonus(foundParam.bonus);
-              const updatedParameters = parameters.map((param) => ({
-                ...param,
-                visible: param.ltv.toString() === navLTV,
-              }));
-              setParameters(updatedParameters);
+              setParameters(foundParam);
               if(navSupplyCap && navBasePrice) {
               setSupplyCap((navSupplyCap / navBasePrice).toFixed(0) as unknown as number);
             }
@@ -116,11 +108,8 @@ export default function RiskLevels() {
           setSelectedPair(pairToSet);
           setSelectedLTV(firstSubMarket.LTV.toString());
           setSelectedBonus(firstSubMarket.liquidationBonus);
-          const updatedParameters = parameters.map((param) => ({
-            ...param,
-            visible: param.ltv === firstSubMarket.LTV,
-          }));
-          setParameters(updatedParameters);
+          const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === firstSubMarket.LTV.toString());
+          setParameters(foundParam || { ltv: 0, bonus: 0, visible: false, color: "" });
           setSupplyCap(firstSubMarket.supplyCapInKind);
           setTokenPrice(firstSubMarket.quotePrice);
 
