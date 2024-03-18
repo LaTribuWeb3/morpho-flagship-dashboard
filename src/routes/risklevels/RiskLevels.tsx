@@ -1,14 +1,11 @@
 import {
   Box,
   FormControl,
-  FormControlLabel,
   Grid,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
-  Switch,
   TextField,
   Typography
 } from '@mui/material';
@@ -19,6 +16,7 @@ import { FriendlyFormatNumber, roundTo, sleep } from '../../utils/Utils';
 import { SimpleAlert } from '../../components/SimpleAlert';
 import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
+import { useLocation } from 'react-router-dom';
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +29,14 @@ export default function RiskLevels() {
   const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY);
   const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
+  const pathName = useLocation().pathname;
+  const navPair = pathName.split('/')[2]
+    ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
+    : undefined;
+  const navLTV = pathName.split('/')[3]
+    ? pathName.split('/')[3]
+    : undefined;
+
   const handleCloseAlert = () => {
     setOpenAlert(false);
   };
@@ -56,38 +62,6 @@ export default function RiskLevels() {
     }
   };
 
-  const handleParameterToggle = (parameter: { ltv: number; bonus: number; visible: boolean }) => {
-    console.log('firing?');
-    /// if parameter is visible
-    if (parameter.visible) {
-      const newParameters = parameters.map((_) => {
-        if (_ === parameter) {
-          return {
-            ..._,
-            visible: false
-          };
-        } else {
-          return _;
-        }
-      });
-      setParameters(newParameters);
-    }
-    /// if parameter is not visible
-    if (!parameter.visible) {
-      const newParameters = parameters.map((_) => {
-        if (_ === parameter) {
-          return {
-            ..._,
-            visible: true
-          };
-        } else {
-          return _;
-        }
-      });
-      setParameters(newParameters);
-    }
-  };
-
   //// useEffect to load data
   useEffect(() => {
     setIsLoading(true);
@@ -96,16 +70,18 @@ export default function RiskLevels() {
       try {
         const data = await DataService.GetAvailablePairs('all');
         setAvailablePairs(
-          data.filter((_) => _.quote === 'USDC' || _.quote === 'WETH').sort((a, b) => a.base.localeCompare(b.base))
+          data.filter((_) => _.quote === 'USDC' || _.quote === 'WETH' || _.quote ==='rETH' || _.quote ==='wstETH').sort((a, b) => a.base.localeCompare(b.base))
         );
 
-        const oldPair = selectedPair;
-
-        if (oldPair && data.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
-          setSelectedPair(oldPair);
-        } else {
+        if (navPair && data.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
+          setSelectedPair(navPair);
+          if (navLTV) {
+            setSelectedLTV(navLTV);
+          }
+        } else if (data.length > 0) {
           setSelectedPair(data[0]);
         }
+
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
         console.error('Error fetching data:', error);

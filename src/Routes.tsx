@@ -18,7 +18,7 @@ const router = createBrowserRouter([
         element: <DataSource />
       },
       {
-        path: 'risklevels/:pair?',
+        path: 'risklevels/:pair?/:ltv?',
         element: <RiskLevels />
       },
       {

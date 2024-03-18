@@ -75,7 +75,7 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                     {row.subMarkets.map((subMarket) => (
                       <TableRow key={subMarket.quote}>
                         <TableCell component="th" scope="row">
-                          <Typography component={RouterLink} to={`/risklevels/${baseSymbol}-${subMarket.quote}`}>
+                          <Typography component={RouterLink} to={`/risklevels/${baseSymbol}-${subMarket.quote}/${subMarket.LTV}`}>
                             {baseSymbol}/{subMarket.quote}
                           </Typography>
                         </TableCell>
