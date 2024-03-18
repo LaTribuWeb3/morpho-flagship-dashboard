@@ -11,6 +11,7 @@ export interface RiskLevelGraphsInterface {
   platform: string;
   supplyCap: number;
   parameters: { ltv: number; bonus: number };
+  quotePrice: number;
 }
 
 export interface GraphDataAtBlock {
@@ -33,10 +34,10 @@ function findRiskLevelFromParameters(
   liquidity: number,
   liquidationBonus: number,
   ltv: number,
-  borrowCap: number
+  supplyCap: number
 ) {
   const sigma = volatility;
-  const d = borrowCap;
+  const d = supplyCap;
   const beta = liquidationBonus;
   const l = liquidity;
 
@@ -54,6 +55,7 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [graphData, setGraphData] = useState<GraphDataAtBlock[]>([]);
+  console.log('props', props);
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
@@ -77,13 +79,13 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
             continue;
           }
           const ltv = props.parameters.ltv;
-          const borrowCap = props.supplyCap;
+          const supplyCap = props.supplyCap;
           currentBlockData[`${props.parameters.bonus}_${props.parameters.ltv}`] = findRiskLevelFromParameters(
             blockData.volatility,
-            liquidity,
+            liquidity * props.quotePrice,
             liquidationBonus / 10000,
             ltv,
-            borrowCap
+            supplyCap
           );
           graphData.push(currentBlockData);
         }

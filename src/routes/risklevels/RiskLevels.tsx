@@ -246,7 +246,13 @@ export default function RiskLevels() {
             <Typography sx={{ ml: '10px' }}>${FriendlyFormatNumber(supplyCapUsd)}</Typography>
           </Grid>
           <Grid item xs={12} lg={10}>
-            <RiskLevelGraphs pair={selectedPair} parameters={parameters} supplyCap={supplyCapUsd} platform={'all'} />
+            <RiskLevelGraphs
+              pair={selectedPair}
+              parameters={parameters}
+              supplyCap={supplyCapUsd}
+              quotePrice={tokenPrice}
+              platform={'all'}
+            />
           </Grid>
         </Grid>
       )}

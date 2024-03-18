@@ -58,7 +58,6 @@ export default function DataSource() {
   };
 
   const handleChangePair = (event: SelectChangeEvent) => {
-    console.log(`handleChangePair: ${event.target.value}`);
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
   };
 
