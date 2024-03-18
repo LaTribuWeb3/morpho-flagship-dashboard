@@ -31,10 +31,16 @@ export default function RiskLevels() {
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
   const pathName = useLocation().pathname;
   const navPair = pathName.split('/')[2]
-    ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
+    ? { base: pathName.split('/')[2].split('-')[1], quote: pathName.split('/')[2].split('-')[0] }
     : undefined;
   const navLTV = pathName.split('/')[3]
     ? pathName.split('/')[3]
+    : undefined;
+  const navSupplyCap = pathName.split('/')[4]
+    ? Number(pathName.split('/')[4])
+    : undefined;
+  const navBasePrice = pathName.split('/')[5]
+    ? Number(pathName.split('/')[5])
     : undefined;
 
   const handleCloseAlert = () => {
@@ -76,7 +82,19 @@ export default function RiskLevels() {
         if (navPair && data.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
-            setSelectedLTV(navLTV);
+            const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === navLTV);
+            if (foundParam) {
+              setSelectedBonus(foundParam.bonus);
+              const updatedParameters = parameters.map((param) => ({
+                ...param,
+                visible: param.ltv.toString() === navLTV,
+              }));
+              setParameters(updatedParameters);
+              if(navSupplyCap && navBasePrice) {
+              setSupplyCap((navSupplyCap / navBasePrice).toFixed(0) as unknown as number);
+            }
+              setTokenPrice(navBasePrice);
+            }
           }
         } else if (data.length > 0) {
           setSelectedPair(data[0]);
@@ -98,42 +116,6 @@ export default function RiskLevels() {
       .then(() => setIsLoading(false))
       .catch(console.error);
   }, []);
-
-  useEffect(() => {
-    setIsLoading(true);
-    async function getTokenPrice() {
-      try {
-        if (!selectedPair) {
-          return;
-        }
-        const data = await DataService.GetLiquidityData('all', selectedPair.base, selectedPair.quote);
-
-        /// get token price
-        const liquidityObjectToArray = Object.keys(data.liquidity).map((_) => parseInt(_));
-        const maxBlock = Math.max.apply(null, liquidityObjectToArray).toString();
-        const tokenPrice = data.liquidity[maxBlock].priceMedian;
-        setTokenPrice(tokenPrice);
-        if (selectedPair?.quote === 'USDC') {
-          setSupplyCap(roundTo(100_000_000 / tokenPrice, 0));
-        }
-        if (selectedPair?.quote === 'WETH') {
-          setSupplyCap(roundTo(50_000 / tokenPrice, 0));
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setOpenAlert(true);
-        setIsLoading(false);
-        if (error instanceof Error) {
-          setAlertMsg(`Error fetching data: ${error.toString()}`);
-        } else {
-          setAlertMsg(`Unknown error`);
-        }
-      }
-    }
-    getTokenPrice()
-      .then(() => setIsLoading(false))
-      .catch(console.error);
-  }, [selectedPair]);
 
   if (!selectedPair || !tokenPrice || !supplyCap) {
     return <RiskLevelGraphsSkeleton />;
@@ -207,7 +189,7 @@ export default function RiskLevels() {
               required
               id="supply-cap-input"
               type="number"
-              label={`Supply Cap in ${selectedPair.base}`}
+              label={`Supply Cap in ${selectedPair.quote}`}
               value={supplyCap}
               onChange={handleChangeSupplyCap}
             />
