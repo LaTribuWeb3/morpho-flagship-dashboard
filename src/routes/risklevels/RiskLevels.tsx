@@ -70,7 +70,7 @@ export default function RiskLevels() {
       try {
         const data = await DataService.GetAvailablePairs('all');
         setAvailablePairs(
-          data.filter((_) => _.quote === 'USDC' || _.quote === 'WETH' || _.quote ==='rETH' || _.quote ==='wstETH').sort((a, b) => a.base.localeCompare(b.base))
+          data.sort((a, b) => a.base.localeCompare(b.base))
         );
 
         if (navPair && data.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
