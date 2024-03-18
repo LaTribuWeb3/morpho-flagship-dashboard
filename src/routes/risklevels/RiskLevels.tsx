@@ -107,9 +107,8 @@ export default function RiskLevels() {
           const pairToSet = { base: firstMarketKey, quote: firstSubMarket.quote};
           setSelectedPair(pairToSet);
           setSelectedLTV(firstSubMarket.LTV.toString());
-          setSelectedBonus(firstSubMarket.liquidationBonus);
-          const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === firstSubMarket.LTV.toString());
-          setParameters(foundParam || { ltv: 0, bonus: 0, visible: false, color: "" });
+          setSelectedBonus(firstSubMarket.liquidationBonus * 10000);
+          setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000});
           setSupplyCap(firstSubMarket.supplyCapInKind);
           setTokenPrice(firstSubMarket.quotePrice);
 

@@ -10,7 +10,7 @@ export interface RiskLevelGraphsInterface {
   pair: Pair;
   platform: string;
   supplyCap: number;
-  parameters: { ltv: number; bonus: number; visible: boolean };
+  parameters: { ltv: number; bonus: number};
 }
 
 export interface GraphDataAtBlock {
