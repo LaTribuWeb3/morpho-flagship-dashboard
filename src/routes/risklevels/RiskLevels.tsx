@@ -17,6 +17,7 @@ import { SimpleAlert } from '../../components/SimpleAlert';
 import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 import { useLocation } from 'react-router-dom';
+import { OverviewData } from '../../models/OverviewData';
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
@@ -75,11 +76,21 @@ export default function RiskLevels() {
     async function fetchData() {
       try {
         const data = await DataService.GetAvailablePairs('all');
+        const morphoData:OverviewData = await DataService.GetOverview();
+        const morphoPairs: string[] = [];
+        for (const market in morphoData) {
+          morphoData[market].subMarkets.forEach(subMarket => {
+                morphoPairs.push(`${subMarket.quote}/${market}`);
+          });
+      }
+      const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
+      console.log(filteredPairs);
+
         setAvailablePairs(
-          data.sort((a, b) => a.base.localeCompare(b.base))
+          filteredPairs.sort((a, b) => a.base.localeCompare(b.base))
         );
 
-        if (navPair && data.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
+        if (navPair && filteredPairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find(param => param.ltv.toString() === navLTV);
@@ -96,8 +107,22 @@ export default function RiskLevels() {
               setTokenPrice(navBasePrice);
             }
           }
-        } else if (data.length > 0) {
-          setSelectedPair(data[0]);
+        } else if (filteredPairs.length > 0) {
+          const firstMarketKey = Object.keys(morphoData)[0];
+          const firstMarket = morphoData[firstMarketKey];
+          const firstSubMarket = firstMarket.subMarkets[0];
+          const pairToSet = { base: firstSubMarket.quote, quote: firstMarketKey };
+          setSelectedPair(pairToSet);
+          setSelectedLTV(firstSubMarket.LTV.toString());
+          setSelectedBonus(firstSubMarket.liquidationBonus);
+          const updatedParameters = parameters.map((param) => ({
+            ...param,
+            visible: param.ltv === firstSubMarket.LTV,
+          }));
+          setParameters(updatedParameters);
+          setSupplyCap(firstSubMarket.supplyCapInKind);
+          setTokenPrice(firstSubMarket.quotePrice);
+
         }
 
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
