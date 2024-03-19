@@ -62,7 +62,7 @@ export function MainAppBar(props: MainAppBarProperties) {
         >
           <Avatar alt="Kinza logo" src="/morpho.svg" sx={{ width: 56, height: 56, padding: 0.25 }} />
           <Typography component="h1" variant="h6" color="inherit" noWrap>
-            Morpho Flagships Dashboard
+          Morpho SmartLTV Monitor
           </Typography>
         </Box>
       </Toolbar>
