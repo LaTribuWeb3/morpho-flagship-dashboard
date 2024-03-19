@@ -4,12 +4,14 @@ export interface OverviewData {
 
 export interface RiskLevelData {
   riskLevel: number;
+  name: string;
+  loanAssetPrice: number;
   subMarkets: SubMarket[];
 }
 
 export interface SubMarket {
   liquidityInKind: number;
-  quote: string;
+  base: string;
   riskLevel: number;
   LTV: number;
   liquidationBonus: number;
@@ -20,5 +22,4 @@ export interface SubMarket {
   volatility: number;
   liquidity: number;
   basePrice: number;
-  quotePrice: number;
 }

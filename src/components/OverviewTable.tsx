@@ -25,8 +25,8 @@ export interface OverviewProperties {
   data: OverviewData;
 }
 
-function Row(props: { baseSymbol: string; row: RiskLevelData }) {
-  const { baseSymbol, row } = props;
+function Row(props: { baseSymbol: string; row: RiskLevelData, vaultName: string, loanAssetPrice: number}) {
+  const { baseSymbol, row, vaultName, loanAssetPrice } = props;
   const screenBigEnough = useMediaQuery('(min-width:600px)');
 
   row.subMarkets.sort((s1, s2) => s2.riskLevel - s1.riskLevel);
@@ -42,7 +42,7 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
           </IconButton>
         </TableCell>
         <TableCell align="center" component="th" scope="row">
-          {baseSymbol}
+          {vaultName}
         </TableCell>
         <TableCell align="center">{row.riskLevel.toFixed(2)}</TableCell>
       </TableRow>
@@ -73,13 +73,13 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                 {screenBigEnough ? (
                   <TableBody>
                     {row.subMarkets.map((subMarket) => (
-                      <TableRow key={subMarket.quote + String(subMarket.LTV)}>
+                      <TableRow key={subMarket.base + String(subMarket.LTV)}>
                         <TableCell component="th" scope="row">
                           <Typography
                             component={RouterLink}
-                            to={`/risklevels/${baseSymbol}-${subMarket.quote}/${subMarket.LTV}/${subMarket.supplyCapInKind}/${subMarket.basePrice}`}
+                            to={`/risklevels/${subMarket.base}-${baseSymbol}/${subMarket.LTV}/${subMarket.supplyCapInKind}/${loanAssetPrice}`}
                           >
-                            {baseSymbol}/{subMarket.quote}
+                            {baseSymbol}/{subMarket.base}
                           </Typography>
                         </TableCell>
                         <TableCell>{subMarket.riskLevel.toFixed(2)}</TableCell>
@@ -89,7 +89,7 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                         </Tooltip>
                         <TableCell>{(subMarket.volatility * 100).toFixed(2)}%</TableCell>
                         <TableCell>
-                          {FriendlyFormatNumber(subMarket.liquidityInKind)} {subMarket.quote}
+                          {FriendlyFormatNumber(subMarket.liquidityInKind)} {subMarket.base}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -97,10 +97,10 @@ function Row(props: { baseSymbol: string; row: RiskLevelData }) {
                 ) : (
                   <TableBody>
                     {row.subMarkets.map((subMarket) => (
-                      <TableRow key={subMarket.quote + String(subMarket.LTV)}>
+                      <TableRow key={subMarket.base + String(subMarket.LTV)}>
                         <TableCell component="th" scope="row">
-                          <Typography component={RouterLink} to={`/risklevels/${baseSymbol}-${subMarket.quote}`}>
-                            {baseSymbol}/{subMarket.quote}
+                          <Typography component={RouterLink} to={`/risklevels/${baseSymbol}-${subMarket.base}`}>
+                            {baseSymbol}/{subMarket.base}
                           </Typography>
                         </TableCell>
                         <TableCell>{subMarket.riskLevel.toFixed(2)}</TableCell>
@@ -128,13 +128,13 @@ export function OverviewTable(props: OverviewProperties) {
             <TableHead>
               <TableRow>
                 <TableCell />
-                <TableCell align="center">Market</TableCell>
+                <TableCell align="center">Vault</TableCell>
                 <TableCell align="center">Risk level</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {Object.keys(props.data).map((baseSymbol, i) => (
-                <Row key={i} baseSymbol={baseSymbol} row={props.data[baseSymbol]} />
+                <Row key={i} baseSymbol={baseSymbol} vaultName={props.data[baseSymbol].name} loanAssetPrice={props.data[baseSymbol].loanAssetPrice} row={props.data[baseSymbol]} />
               ))}
             </TableBody>
           </Table>

@@ -55,8 +55,7 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [graphData, setGraphData] = useState<GraphDataAtBlock[]>([]);
-  console.log('props', props);
-
+  
   const handleCloseAlert = () => {
     setOpenAlert(false);
   };
@@ -74,7 +73,7 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
             blockNumber: Number(block)
           };
           const liquidationBonus = props.parameters.bonus;
-          const liquidity = blockData.avgSlippageMap[liquidationBonus].base;
+          const liquidity = blockData.avgSlippageMap[liquidationBonus].quote;
           if (liquidity <= 0) {
             continue;
           }

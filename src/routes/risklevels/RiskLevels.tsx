@@ -86,7 +86,7 @@ export default function RiskLevels() {
         const morphoPairs: string[] = [];
         for (const market in morphoData) {
           morphoData[market].subMarkets.forEach((subMarket) => {
-            morphoPairs.push(`${market}/${subMarket.quote}`);
+            morphoPairs.push(`${subMarket.base}/${market}`);
           });
         }
         const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
@@ -112,14 +112,14 @@ export default function RiskLevels() {
           const firstMarketKey = Object.keys(morphoData)[0];
           const firstMarket = morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
-          const pairToSet = { base: firstMarketKey, quote: firstSubMarket.quote };
+          const pairToSet = { base: firstSubMarket.base, quote: firstMarketKey };
           setSelectedPair(pairToSet);
           setSelectedLTV(firstSubMarket.LTV.toString());
           setSelectedBonus(firstSubMarket.liquidationBonus * 10000);
           setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 });
           setSupplyCapUsd(firstSubMarket.supplyCapUsd);
           setSupplyCapInKind(firstSubMarket.supplyCapInKind);
-          setTokenPrice(firstSubMarket.quotePrice);
+          setTokenPrice(morphoData[firstMarketKey].loanAssetPrice);
         }
 
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
@@ -239,7 +239,7 @@ export default function RiskLevels() {
               required
               id="supply-cap-input"
               type="number"
-              label={`Supply Cap in ${selectedPair.base}`}
+              label={`Supply Cap in ${selectedPair.quote}`}
               value={supplyCapInKind}
               onChange={handleChangeSupplyCap}
             />
