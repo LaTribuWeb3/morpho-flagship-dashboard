@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from 'react';
 import DataService from '../../services/DataService';
 import { Pair } from '../../models/ApiData';
-import { FriendlyFormatNumber, roundTo, sleep } from '../../utils/Utils';
+import { FriendlyFormatNumber, sleep } from '../../utils/Utils';
 import { SimpleAlert } from '../../components/SimpleAlert';
 import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
