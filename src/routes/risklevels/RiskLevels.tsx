@@ -45,8 +45,8 @@ export default function RiskLevels() {
   };
   const handleChangePair = (event: SelectChangeEvent) => {
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
-    const matchingSubMarket = morphoData[event.target.value.split('/')[0]].subMarkets.find(
-      (subMarket) => subMarket.quote === event.target.value.split('/')[1]
+    const matchingSubMarket = morphoData[event.target.value.split('/')[1]].subMarkets.find(
+      (subMarket) => subMarket.base === event.target.value.split('/')[0]
     );
     if (matchingSubMarket) {
       setSelectedLTV(matchingSubMarket.LTV.toString());
@@ -54,7 +54,7 @@ export default function RiskLevels() {
       setParameters({ ltv: matchingSubMarket.LTV, bonus: matchingSubMarket.liquidationBonus * 10000 });
       setSupplyCapUsd(matchingSubMarket.supplyCapUsd);
       setSupplyCapInKind(matchingSubMarket.supplyCapInKind);
-      setTokenPrice(matchingSubMarket.quotePrice);
+      setTokenPrice(morphoData[event.target.value.split('/')[1]].loanAssetPrice);
     }
   };
   const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
