@@ -40,7 +40,7 @@ export function MainAppBar(props: MainAppBarProperties) {
           aria-label="open drawer"
           edge="start"
           onClick={props.toggleDrawerFct}
-          sx={{ mr: 2, display: { md: 'none' } }}
+          sx={{ mr: 1, display: { md: 'none' } }}
         >
           <MenuIcon />
         </IconButton>
@@ -57,13 +57,13 @@ export function MainAppBar(props: MainAppBarProperties) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 2
+            gap: 1
           }}
         >
           <Avatar
             alt="Morpho logo"
             src="/morpho.svg"
-            sx={{ display: { xs: 'none', md: 'flex' }, width: 45, height: 45, padding: 0.25 }}
+            sx={{ display: { xs: 'none', sm: 'flex' }, width: 45, height: 45, padding: 0.25 }}
           />
           <Typography component="h1" variant="h6" color="inherit" textAlign="center" noWrap>
             Morpho SmartLTV Monitor
