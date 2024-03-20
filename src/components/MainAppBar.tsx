@@ -48,7 +48,7 @@ export function MainAppBar(props: MainAppBarProperties) {
           variant="rounded"
           alt="b protocol logo"
           src="/favicon.svg"
-          sx={{ width: 45, height: 35, padding: 0.5 }}
+          sx={{ width: { xs: 45, md: 56 }, height: { xs: 35, md: 45 }, padding: 0.5 }}
         />
         <Box
           sx={{
@@ -60,10 +60,19 @@ export function MainAppBar(props: MainAppBarProperties) {
             gap: 2
           }}
         >
-          <Avatar alt="Morpho logo" src="/morpho.svg" sx={{ width: 45, height: 45, padding: 0.25 }} />
-          <Typography component="h1" variant="h6" color="inherit" noWrap>
+          <Avatar
+            alt="Morpho logo"
+            src="/morpho.svg"
+            sx={{ display: { xs: 'none', md: 'flex' }, width: 45, height: 45, padding: 0.25 }}
+          />
+          <Typography component="h1" variant="h6" color="inherit" textAlign="center" noWrap>
             Morpho SmartLTV Monitor
           </Typography>
+          <Avatar
+            alt="Morpho logo"
+            src="/morpho.svg"
+            sx={{ display: { xs: 'flex', sm: 'none' }, width: 35, height: 35 }}
+          />
         </Box>
       </Toolbar>
     </AppBar>
