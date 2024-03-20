@@ -48,7 +48,7 @@ export function MainAppBar(props: MainAppBarProperties) {
           variant="rounded"
           alt="b protocol logo"
           src="/favicon.svg"
-          sx={{ width: { xs: 45, md: 56 }, height: { xs: 35, md: 45 }, padding: 0.5, mr: 0.25 }}
+          sx={{ width: { xs: 40, md: 56 }, height: { xs: 30, md: 45 }, padding: 0.25, mr: 0.25 }}
         />
         <Box
           sx={{
