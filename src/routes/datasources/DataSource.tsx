@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import DataService from '../../services/DataService';
 import { Pair } from '../../models/ApiData';
 import {
@@ -18,6 +18,8 @@ import { SLIPPAGES_BPS } from '../../utils/Constants';
 import { DataSourceGraphs } from './DataSourceGraphs';
 import { sleep } from '../../utils/Utils';
 import { DATA_SOURCES, DATA_SOURCES_MAP } from '../../utils/Constants';
+import { AppContextType } from '../../models/Context';
+import { AppContext } from '../App';
 
 function DataSourceSkeleton() {
   return (
@@ -44,6 +46,7 @@ export default function DataSource() {
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [platform, setPlatform] = useState('all');
+  const { contextVariables, setContextVariables } = useContext<AppContextType>(AppContext);
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
@@ -51,14 +54,47 @@ export default function DataSource() {
 
   const handleChangePlatform = (event: SelectChangeEvent) => {
     setPlatform(event.target.value);
+    if (selectedPair) {
+      setContextVariables({
+        riskContext: contextVariables.riskContext,
+        datasourcesContext: {
+          current: true,
+          pair: selectedPair,
+          datasource: event.target.value,
+          slippage: selectedSlippage
+        }
+      });
+    }
   };
 
   const handleChangeSlippage = (event: SelectChangeEvent) => {
     setSelectedSlippage(Number(event.target.value));
+    if (selectedPair) {
+      setContextVariables({
+        riskContext: contextVariables.riskContext,
+        datasourcesContext: {
+          current: true,
+          pair: selectedPair,
+          datasource: platform,
+          slippage: Number(event.target.value)
+        }
+      });
+    }
   };
 
   const handleChangePair = (event: SelectChangeEvent) => {
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
+    if (platform) {
+      setContextVariables({
+        riskContext: contextVariables.riskContext,
+        datasourcesContext: {
+          current: true,
+          pair: { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] },
+          datasource: platform,
+          slippage: selectedSlippage
+        }
+      });
+    }
   };
 
   useEffect(() => {
@@ -70,8 +106,18 @@ export default function DataSource() {
         setAvailablePairs(data);
 
         const oldPair = selectedPair;
-
-        if (oldPair && data.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
+        if (
+          contextVariables.datasourcesContext.current &&
+          data.some(
+            (_) =>
+              _.base == contextVariables.datasourcesContext.pair.base &&
+              _.quote == contextVariables.datasourcesContext.pair.quote
+          )
+        ) {
+          setSelectedPair(contextVariables.datasourcesContext.pair);
+          setSelectedSlippage(contextVariables.datasourcesContext.slippage);
+          setPlatform(contextVariables.datasourcesContext.datasource);
+        } else if (oldPair && data.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
           setSelectedPair(oldPair);
         } else {
           setSelectedPair(data[0]);
