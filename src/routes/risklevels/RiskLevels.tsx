@@ -9,7 +9,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import DataService from '../../services/DataService';
 import { Pair } from '../../models/ApiData';
 import { FriendlyFormatNumber, sleep } from '../../utils/Utils';
@@ -18,6 +18,8 @@ import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 import { useLocation } from 'react-router-dom';
 import { OverviewData } from '../../models/OverviewData';
+import { AppContext } from '../App';
+import { AppContextType } from '../../models/Context';
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +34,7 @@ export default function RiskLevels() {
   const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY[1]);
   const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
+  const { contextVariables, setContextVariables } = useContext<AppContextType>(AppContext);
   const pathName = useLocation().pathname;
   const navPair = pathName.split('/')[2]
     ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
@@ -55,6 +58,17 @@ export default function RiskLevels() {
       setSupplyCapUsd(matchingSubMarket.supplyCapUsd);
       setSupplyCapInKind(matchingSubMarket.supplyCapInKind);
       setTokenPrice(morphoData[event.target.value.split('/')[1]].loanAssetPrice);
+      setContextVariables({
+        riskContext: {
+          current: true,
+          pair: { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] },
+          LTV: matchingSubMarket.LTV,
+          liquidationBonus: matchingSubMarket.liquidationBonus * 10000,
+          supplyCapInLoanAsset: matchingSubMarket.supplyCapInKind,
+          loanAssetPrice: morphoData[event.target.value.split('/')[1]].loanAssetPrice
+        },
+        datasourcesContext: contextVariables.datasourcesContext
+      });
     }
   };
   const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +76,19 @@ export default function RiskLevels() {
       setSupplyCapInKind(Number(event.target.value));
       if (tokenPrice) {
         setSupplyCapUsd(Number(event.target.value) * tokenPrice);
+      }
+      if (selectedPair && parameters && tokenPrice) {
+        setContextVariables({
+          riskContext: {
+            current: true,
+            pair: selectedPair,
+            LTV: parameters.ltv,
+            liquidationBonus: parameters.bonus,
+            supplyCapInLoanAsset: Number(event.target.value),
+            loanAssetPrice: tokenPrice
+          },
+          datasourcesContext: contextVariables.datasourcesContext
+        });
       }
     }
   };
@@ -71,6 +98,19 @@ export default function RiskLevels() {
     if (foundParam) {
       setSelectedBonus(foundParam.bonus);
       setParameters(foundParam);
+      if (selectedPair && supplyCapInKind && tokenPrice) {
+        setContextVariables({
+          riskContext: {
+            current: true,
+            pair: selectedPair,
+            LTV: foundParam.ltv,
+            liquidationBonus: foundParam.bonus,
+            supplyCapInLoanAsset: supplyCapInKind,
+            loanAssetPrice: tokenPrice
+          },
+          datasourcesContext: contextVariables.datasourcesContext
+        });
+      }
     }
   };
 
@@ -92,7 +132,6 @@ export default function RiskLevels() {
         const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
 
         setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
-
         if (navPair && filteredPairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
@@ -108,6 +147,23 @@ export default function RiskLevels() {
               setTokenPrice(navBasePrice);
             }
           }
+        } else if (
+          contextVariables.riskContext.current &&
+          filteredPairs.some(
+            ({ base, quote }) =>
+              base === contextVariables.riskContext.pair.base && quote === contextVariables.riskContext.pair.quote
+          )
+        ) {
+          setSelectedPair(contextVariables.riskContext.pair);
+          setSelectedLTV(contextVariables.riskContext.LTV.toString());
+          setSelectedBonus(contextVariables.riskContext.liquidationBonus);
+          setParameters({
+            ltv: contextVariables.riskContext.LTV,
+            bonus: contextVariables.riskContext.liquidationBonus
+          });
+          setSupplyCapUsd(contextVariables.riskContext.supplyCapInLoanAsset);
+          setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
+          setTokenPrice(contextVariables.riskContext.loanAssetPrice);
         } else if (filteredPairs.length > 0) {
           const firstMarketKey = Object.keys(morphoData)[0];
           const firstMarket = morphoData[firstMarketKey];
