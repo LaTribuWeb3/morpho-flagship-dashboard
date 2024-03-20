@@ -172,7 +172,9 @@ export default function RiskLevels() {
             ltv: contextVariables.riskContext.LTV,
             bonus: contextVariables.riskContext.liquidationBonus
           });
-          setSupplyCapUsd(contextVariables.riskContext.supplyCapInLoanAsset);
+          setSupplyCapUsd(
+            contextVariables.riskContext.supplyCapInLoanAsset * contextVariables.riskContext.loanAssetPrice
+          );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
         } else if (filteredPairs.length > 0) {
