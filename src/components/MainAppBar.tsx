@@ -53,7 +53,7 @@ export function MainAppBar(props: MainAppBarProperties) {
         <Box
           sx={{
             height: '100%',
-            width: '100%',
+            width: '95%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -65,15 +65,24 @@ export function MainAppBar(props: MainAppBarProperties) {
             src="/morpho.svg"
             sx={{ display: { xs: 'none', sm: 'flex' }, width: 45, height: 45, padding: 0.25 }}
           />
-          <Typography component="h1" variant="h6" color="inherit" textAlign="center" noWrap>
+          <Typography
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
+            variant="h6"
+            color="inherit"
+            textAlign="center"
+            noWrap
+          >
             Morpho SmartLTV Monitor
           </Typography>
-          <Avatar
-            alt="Morpho logo"
-            src="/morpho.svg"
-            sx={{ display: { xs: 'flex', sm: 'none' }, width: 35, height: 35 }}
-          />
+          <Typography sx={{ display: { xs: 'flex', sm: 'none' } }} color="inherit" textAlign="center" noWrap>
+            Morpho SmartLTV Monitor
+          </Typography>
         </Box>
+        <Avatar
+          alt="Morpho logo"
+          src="/morpho.svg"
+          sx={{ display: { xs: 'flex', sm: 'none' }, width: 35, height: 35 }}
+        />
       </Toolbar>
     </AppBar>
   );
