@@ -40,7 +40,7 @@ export function MainAppBar(props: MainAppBarProperties) {
           aria-label="open drawer"
           edge="start"
           onClick={props.toggleDrawerFct}
-          sx={{ mr: 0.5, display: { md: 'none' } }}
+          sx={{ mr: 0.25, display: { md: 'none' } }}
         >
           <MenuIcon />
         </IconButton>
@@ -48,7 +48,7 @@ export function MainAppBar(props: MainAppBarProperties) {
           variant="rounded"
           alt="b protocol logo"
           src="/favicon.svg"
-          sx={{ width: { xs: 45, md: 56 }, height: { xs: 35, md: 45 }, padding: 0.5, mr: 1 }}
+          sx={{ width: { xs: 45, md: 56 }, height: { xs: 35, md: 45 }, padding: 0.5, mr: 0.25 }}
         />
         <Box
           sx={{
