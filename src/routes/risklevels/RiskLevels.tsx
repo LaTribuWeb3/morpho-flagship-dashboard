@@ -143,6 +143,17 @@ export default function RiskLevels() {
               if (navSupplyCap && navBasePrice) {
                 setSupplyCapInKind(navSupplyCap);
                 setSupplyCapUsd((navSupplyCap * navBasePrice).toFixed(0) as unknown as number);
+                setContextVariables({
+                  riskContext: {
+                    current: true,
+                    pair: navPair,
+                    LTV: foundParam.ltv,
+                    liquidationBonus: foundParam.bonus,
+                    supplyCapInLoanAsset: navSupplyCap,
+                    loanAssetPrice: navBasePrice
+                  },
+                  datasourcesContext: contextVariables.datasourcesContext
+                });
               }
               setTokenPrice(navBasePrice);
             }
