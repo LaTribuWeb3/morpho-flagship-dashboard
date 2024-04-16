@@ -20,6 +20,7 @@ import { sleep } from '../../utils/Utils';
 import { DATA_SOURCES, DATA_SOURCES_MAP } from '../../utils/Constants';
 import { AppContextType } from '../../models/Context';
 import { AppContext } from '../App';
+import { OverviewData } from '../../models/OverviewData';
 
 function DataSourceSkeleton() {
   return (
@@ -103,7 +104,16 @@ export default function DataSource() {
     async function fetchData() {
       try {
         const data = await DataService.GetAvailablePairs(platform);
-        setAvailablePairs(data);
+        const morphoData: OverviewData = await DataService.GetOverview();
+        const morphoPairs: string[] = [];
+        for (const market in morphoData) {
+          morphoData[market].subMarkets.forEach((subMarket) => {
+            morphoPairs.push(`${subMarket.base}/${market}`);
+          });
+        }
+        const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
+        setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
+
 
         const oldPair = selectedPair;
         if (
@@ -120,7 +130,7 @@ export default function DataSource() {
         } else if (oldPair && data.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
           setSelectedPair(oldPair);
         } else {
-          setSelectedPair(data[0]);
+          setSelectedPair(filteredPairs[0]);
         }
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
