@@ -43,7 +43,6 @@ function App() {
     },
     datasourcesContext: { current: false, pair: { base: '', quote: '' }, datasource: '', slippage: 0 }
   });
-  console.log({ contextVariables });
 
   const toggleDrawer = () => {
     setOpenDrawer(!openDrawer);

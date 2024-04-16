@@ -12,6 +12,7 @@ export interface RiskLevelGraphsInterface {
   supplyCap: number;
   parameters: { ltv: number; bonus: number };
   quotePrice: number;
+  basePrice: number;
 }
 
 export interface GraphDataAtBlock {
@@ -73,7 +74,7 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
             blockNumber: Number(block)
           };
           const liquidationBonus = props.parameters.bonus;
-          const liquidity = blockData.avgSlippageMap[liquidationBonus].quote;
+          const liquidity = blockData.avgSlippageMap[liquidationBonus];
           if (liquidity <= 0) {
             continue;
           }
@@ -81,7 +82,7 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
           const supplyCap = props.supplyCap;
           currentBlockData[`${props.parameters.bonus}_${props.parameters.ltv}`] = findRiskLevelFromParameters(
             blockData.volatility,
-            liquidity * props.quotePrice,
+            liquidity * props.basePrice,
             liquidationBonus / 10000,
             ltv,
             supplyCap
@@ -153,7 +154,7 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
               leftAxisSeries={[
                 {
                   label: `${props.pair.base} liquidity for 5% slippage`,
-                  data: Object.values(liquidityData.liquidity).map((_) => _.avgSlippageMap[500].base),
+                  data: Object.values(liquidityData.liquidity).map((_) => _.avgSlippageMap[500]),
                   formatter: FriendlyFormatNumber
                 }
               ]}

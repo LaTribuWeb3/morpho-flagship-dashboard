@@ -28,7 +28,6 @@ export function NavCategories(props: NavCategoriesProperties) {
     setSelectedButton(findDefaultNavCategory(pathName));
   }, [pathName]);
 
-  console.log(selectedButton);
   function handleClick(buttonName: string) {
     setSelectedButton(buttonName);
     props.toggleDrawerFct();

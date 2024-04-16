@@ -31,6 +31,7 @@ export default function RiskLevels() {
   const [supplyCapUsd, setSupplyCapUsd] = useState<number | undefined>(undefined);
   const [supplyCapInKind, setSupplyCapInKind] = useState<number | undefined>(undefined);
   const [tokenPrice, setTokenPrice] = useState<number | undefined>(undefined);
+  const [baseTokenPrice, setBaseTokenPrice] = useState<number | undefined>(undefined);
   const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY[1]);
   const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
@@ -156,6 +157,8 @@ export default function RiskLevels() {
                 });
               }
               setTokenPrice(navBasePrice);
+              const morphoMarketForContext = morphoData[navPair.quote].subMarkets.find(_ => _.LTV == foundParam.ltv && _.base == navPair.base);
+              setBaseTokenPrice(morphoMarketForContext?.basePrice);
             }
           }
         } else if (
@@ -177,6 +180,9 @@ export default function RiskLevels() {
           );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
+          const morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
+
+          setBaseTokenPrice(morphoMarketForContext?.basePrice);
         } else if (filteredPairs.length > 0) {
           const firstMarketKey = Object.keys(morphoData)[0];
           const firstMarket = morphoData[firstMarketKey];
@@ -189,6 +195,7 @@ export default function RiskLevels() {
           setSupplyCapUsd(firstSubMarket.supplyCapUsd);
           setSupplyCapInKind(firstSubMarket.supplyCapInKind);
           setTokenPrice(morphoData[firstMarketKey].loanAssetPrice);
+          setBaseTokenPrice(firstSubMarket.basePrice);
         }
 
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
@@ -208,7 +215,7 @@ export default function RiskLevels() {
       .catch(console.error);
   }, []);
 
-  if (!selectedPair || !tokenPrice || !supplyCapUsd) {
+  if (!selectedPair || !tokenPrice || !supplyCapUsd || !baseTokenPrice) {
     return <RiskLevelGraphsSkeleton />;
   }
   return (
@@ -320,6 +327,7 @@ export default function RiskLevels() {
               parameters={parameters}
               supplyCap={supplyCapUsd}
               quotePrice={tokenPrice}
+              basePrice={baseTokenPrice}
               platform={'all'}
             />
           </Grid>

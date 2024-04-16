@@ -100,18 +100,10 @@ export function DataSourceGraphs(props: DataSourceGraphsInterface) {
               xAxisData={Object.keys(liquidityData.liquidity).map((_) => Number(_))}
               xAxisLabel="Date"
               leftYAxis={{ min: 0, formatter: FriendlyFormatNumber, label: props.pair.base }}
-              rightYAxis={{ min: 0, formatter: FriendlyFormatNumber, label: props.pair.quote }}
               leftAxisSeries={[
                 {
                   label: `Amount ${props.pair.base} sold`,
-                  data: Object.values(liquidityData.liquidity).map((_) => _.avgSlippageMap[props.targetSlippage].base),
-                  formatter: FriendlyFormatNumber
-                }
-              ]}
-              rightAxisSeries={[
-                {
-                  label: `Amount ${props.pair.quote} received`,
-                  data: Object.values(liquidityData.liquidity).map((_) => _.avgSlippageMap[props.targetSlippage].quote),
+                  data: Object.values(liquidityData.liquidity).map((_) => _.avgSlippageMap[props.targetSlippage]),
                   formatter: FriendlyFormatNumber
                 }
               ]}
