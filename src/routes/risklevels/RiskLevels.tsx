@@ -180,9 +180,14 @@ export default function RiskLevels() {
           );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
-          const morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
+          let morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
 
-          setBaseTokenPrice(morphoMarketForContext?.basePrice);
+          if(morphoMarketForContext) {
+            setBaseTokenPrice(morphoMarketForContext.basePrice);
+          } else {
+            morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
+            setBaseTokenPrice(morphoMarketForContext?.basePrice);
+          }
         } else if (filteredPairs.length > 0) {
           const firstMarketKey = Object.keys(morphoData)[0];
           const firstMarket = morphoData[firstMarketKey];
@@ -196,6 +201,7 @@ export default function RiskLevels() {
           setSupplyCapInKind(firstSubMarket.supplyCapInKind);
           setTokenPrice(morphoData[firstMarketKey].loanAssetPrice);
           setBaseTokenPrice(firstSubMarket.basePrice);
+        } else {
         }
 
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
