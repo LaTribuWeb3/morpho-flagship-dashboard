@@ -157,7 +157,9 @@ export default function RiskLevels() {
                 });
               }
               setTokenPrice(navBasePrice);
-              const morphoMarketForContext = morphoData[navPair.quote].subMarkets.find(_ => _.LTV == foundParam.ltv && _.base == navPair.base);
+              const morphoMarketForContext = morphoData[navPair.quote].subMarkets.find(
+                (_) => _.LTV == foundParam.ltv && _.base == navPair.base
+              );
               setBaseTokenPrice(morphoMarketForContext?.basePrice);
             }
           }
@@ -180,12 +182,16 @@ export default function RiskLevels() {
           );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
-          let morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
+          let morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(
+            (_) => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base
+          );
 
-          if(morphoMarketForContext) {
+          if (morphoMarketForContext) {
             setBaseTokenPrice(morphoMarketForContext.basePrice);
           } else {
-            morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
+            morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(
+              (_) => _.base == contextVariables.riskContext.pair.base
+            );
             setBaseTokenPrice(morphoMarketForContext?.basePrice);
           }
         } else if (filteredPairs.length > 0) {

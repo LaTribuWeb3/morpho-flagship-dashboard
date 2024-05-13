@@ -25,7 +25,7 @@ export interface OverviewProperties {
   data: OverviewData;
 }
 
-function Row(props: { baseSymbol: string; row: RiskLevelData, vaultName: string, loanAssetPrice: number}) {
+function Row(props: { baseSymbol: string; row: RiskLevelData; vaultName: string; loanAssetPrice: number }) {
   const { baseSymbol, row, vaultName, loanAssetPrice } = props;
   const screenBigEnough = useMediaQuery('(min-width:600px)');
 
@@ -134,7 +134,13 @@ export function OverviewTable(props: OverviewProperties) {
             </TableHead>
             <TableBody>
               {Object.keys(props.data).map((baseSymbol, i) => (
-                <Row key={i} baseSymbol={baseSymbol} vaultName={props.data[baseSymbol].name} loanAssetPrice={props.data[baseSymbol].loanAssetPrice} row={props.data[baseSymbol]} />
+                <Row
+                  key={i}
+                  baseSymbol={baseSymbol}
+                  vaultName={props.data[baseSymbol].name}
+                  loanAssetPrice={props.data[baseSymbol].loanAssetPrice}
+                  row={props.data[baseSymbol]}
+                />
               ))}
             </TableBody>
           </Table>

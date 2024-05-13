@@ -114,7 +114,6 @@ export default function DataSource() {
         const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
         setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
 
-
         const oldPair = selectedPair;
         if (
           contextVariables.datasourcesContext.current &&
