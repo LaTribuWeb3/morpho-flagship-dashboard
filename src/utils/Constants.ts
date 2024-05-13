@@ -42,3 +42,44 @@ export const MORPHO_RISK_PARAMETERS_ARRAY = [
     bonus: 1250
   }
 ];
+
+import { appContextType } from '../models/AppContext';
+
+export const initialContext: appContextType = {
+  contextVariables: {
+    chain: 'eth',
+    overviewData: {},
+    loading: true,
+    availablePairs: {},
+    pairsByPlatform: {},
+    platformsByPair: {},
+    riskParameters: {},
+    pages: {
+      riskLevels: {
+        selectedPair: { base: '', quote: '' },
+        currentLiquidationThreshold: 0,
+        selectedRiskParameter: {
+          pair: { base: '', quote: '' },
+          ltv: 0,
+          liquidationThreshold: 0,
+          bonus: 0,
+          visible: true,
+          supplyCapInUSD: 0,
+          borrowCapInUSD: 0,
+          basePrice: 0
+        },
+        capUSD: 0,
+        capInKind: 0,
+        tokenPrice: 0
+      },
+      dataSources: {
+        current: false,
+        pair: { base: '', quote: '' },
+        platform: 'all',
+        platformsForPair: [],
+        slippage: 500
+      }
+    }
+  },
+  setContextVariables: () => {}
+};

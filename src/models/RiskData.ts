@@ -1,14 +1,18 @@
-export interface KinzaRiskParameters {
+import { Pair } from './ApiData';
+
+export interface MorphoRiskParameters {
   [symbol: string]: {
-    [quote: string]: KinzaRiskParameter;
+    [quote: string]: MorphoRiskParameter;
   };
 }
 
-export interface KinzaRiskParameter {
+export interface MorphoRiskParameter {
+  pair: Pair;
   ltv: number;
   bonus: number;
   visible: true;
   supplyCapInUSD: number;
   borrowCapInUSD: number;
   basePrice: number;
+  liquidationThreshold: number;
 }
