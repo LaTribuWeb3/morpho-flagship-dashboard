@@ -11,7 +11,6 @@ import { OverviewData, RiskLevelData } from '../models/OverviewData';
 export default function DataLoadingWrapper() {
   const pathName = useLocation().pathname;
   const { contextVariables, setContextVariables } = useContext(AppContext);
-  const chain = contextVariables.chain;
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,19 +18,7 @@ export default function DataLoadingWrapper() {
       try {
         setLoading(true);
 
-        const overviewData = await DataService.GetOverview();
-
-        const entries: [string, RiskLevelData][] = Object.entries(overviewData);
-        entries.sort((a, b) => b[1].riskLevel - a[1].riskLevel);
-        const sortedOverviewData: OverviewData = entries.reduce(
-          (acc: OverviewData, riskLevelData: [string, RiskLevelData]) => {
-            acc[riskLevelData[0]] = riskLevelData[1];
-            return acc;
-          },
-          {} as OverviewData
-        );
-
-        initialContext.contextVariables.overviewData = sortedOverviewData;
+        initialContext.contextVariables.overviewData = await computeSortedOverviewData();
 
         setContextVariables(initialContext.contextVariables);
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
@@ -73,4 +60,20 @@ export default function DataLoadingWrapper() {
       )}
     </Box>
   );
+
+  async function computeSortedOverviewData() {
+    const overviewData = await DataService.GetOverview();
+
+    const entries: [string, RiskLevelData][] = Object.entries(overviewData);
+    entries.sort((a, b) => b[1].riskLevel - a[1].riskLevel);
+    const sortedOverviewData: OverviewData = entries.reduce(
+      (acc: OverviewData, riskLevelData: [string, RiskLevelData]) => {
+        acc[riskLevelData[0]] = riskLevelData[1];
+        return acc;
+      },
+      {} as OverviewData
+    );
+    
+    return sortedOverviewData;
+  }
 }
