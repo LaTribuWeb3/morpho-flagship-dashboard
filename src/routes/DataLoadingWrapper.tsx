@@ -4,7 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { sleep } from '../utils/Utils';
 import { Overview } from './overview/Overview';
 import { AppContext } from './App';
-import { initialContext } from '../utils/Constants';
+import { MORPHO_RISK_PARAMETERS_ARRAY, initialContext } from '../utils/Constants';
 import DataService from '../services/DataService';
 import { OverviewData, RiskLevelData } from '../models/OverviewData';
 
@@ -16,9 +16,12 @@ export default function DataLoadingWrapper() {
   useEffect(() => {
     async function fetchData() {
       try {
-        setLoading(true);
+        contextVariables.isDataLoading = true;
 
         initialContext.contextVariables.overviewData = await computeSortedOverviewData();
+        initialContext.contextVariables.morphoRiskParameters = MORPHO_RISK_PARAMETERS_ARRAY[1];
+        // initialContext.contextVariables.data = await DataService.GetLiquidityData(props.platform, props.pair.base, props.pair.quote);
+        initialContext.contextVariables.availablePairs = await DataService.GetAvailablePairs('all');
 
         setContextVariables(initialContext.contextVariables);
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
@@ -31,9 +34,11 @@ export default function DataLoadingWrapper() {
         }
       }
     }
-    setLoading(true);
+    contextVariables.isDataLoading = true;
     fetchData()
-      .then(() => setLoading(false))
+      .then(() => {
+        contextVariables.isDataLoading = false
+      })
       .catch(console.error);
   }, []);
 
@@ -50,7 +55,7 @@ export default function DataLoadingWrapper() {
         direction: 'row'
       }}
     >
-      {loading ? (
+      {contextVariables.isDataLoading ? (
         <Skeleton height={500} variant="rectangular" />
       ) : (
         <Box sx={{ mt: 8, ml: 1.5 }}>
@@ -73,7 +78,7 @@ export default function DataLoadingWrapper() {
       },
       {} as OverviewData
     );
-    
+
     return sortedOverviewData;
   }
 }

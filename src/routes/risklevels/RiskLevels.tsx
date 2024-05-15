@@ -19,23 +19,28 @@ import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 import { useLocation } from 'react-router-dom';
 import { OverviewData } from '../../models/OverviewData';
 import { AppContext } from '../App';
-import { AppContextType } from '../../models/Context';
+import { AppContextType, ContextVariables } from '../../models/Context';
+import { AppContextProperties } from '../../models/AppContext';
 
 export default function RiskLevels() {
-  const [isLoading, setIsLoading] = useState(true);
+  const { contextVariables, setContextVariables } = useContext(AppContext);
+  const [isLoading, setLoading] = useState(false);
+
+  // const appContext = useContext(AppContext);
+  // const contextVariables = appContext.contextVariables;
+  const parameters = contextVariables.morphoRiskParameters;
+
   const [availablePairs, setAvailablePairs] = useState<Pair[]>([]);
   const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
-  const [morphoData, setMorphoData] = useState<OverviewData>({});
   const [supplyCapUsd, setSupplyCapUsd] = useState<number | undefined>(undefined);
   const [supplyCapInKind, setSupplyCapInKind] = useState<number | undefined>(undefined);
   const [tokenPrice, setTokenPrice] = useState<number | undefined>(undefined);
   const [baseTokenPrice, setBaseTokenPrice] = useState<number | undefined>(undefined);
-  const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY[1]);
+  // const [parameters, setParameters] = useState(MORPHO_RISK_PARAMETERS_ARRAY[1]); // To put in context
   const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
-  const { contextVariables, setContextVariables } = useContext<AppContextType>(AppContext);
   const pathName = useLocation().pathname;
   const navPair = pathName.split('/')[2]
     ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
@@ -49,29 +54,27 @@ export default function RiskLevels() {
   };
   const handleChangePair = (event: SelectChangeEvent) => {
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
-    const matchingSubMarket = morphoData[event.target.value.split('/')[1]].subMarkets.find(
+    const matchingSubMarket = contextVariables.overviewData[event.target.value.split('/')[1]].subMarkets.find(
       (subMarket) => subMarket.base === event.target.value.split('/')[0]
     );
     if (matchingSubMarket) {
       setSelectedLTV(matchingSubMarket.LTV.toString());
       setSelectedBonus(matchingSubMarket.liquidationBonus * 10000);
-      setParameters({ ltv: matchingSubMarket.LTV, bonus: matchingSubMarket.liquidationBonus * 10000 });
+      contextVariables.morphoRiskParameters = { ltv: matchingSubMarket.LTV, bonus: matchingSubMarket.liquidationBonus * 10000 };
       setSupplyCapUsd(matchingSubMarket.supplyCapUsd);
       setSupplyCapInKind(matchingSubMarket.supplyCapInKind);
-      setTokenPrice(morphoData[event.target.value.split('/')[1]].loanAssetPrice);
-      setContextVariables({
-        riskContext: {
-          current: true,
-          pair: { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] },
-          LTV: matchingSubMarket.LTV,
-          liquidationBonus: matchingSubMarket.liquidationBonus * 10000,
-          supplyCapInLoanAsset: matchingSubMarket.supplyCapInKind,
-          loanAssetPrice: morphoData[event.target.value.split('/')[1]].loanAssetPrice
-        },
-        datasourcesContext: contextVariables.datasourcesContext
-      });
+      setTokenPrice(contextVariables.overviewData[event.target.value.split('/')[1]].loanAssetPrice);
+      contextVariables.riskContext = {
+        current: true,
+        pair: { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] },
+        LTV: matchingSubMarket.LTV,
+        liquidationBonus: matchingSubMarket.liquidationBonus * 10000,
+        supplyCapInLoanAsset: matchingSubMarket.supplyCapInKind,
+        loanAssetPrice: contextVariables.overviewData[event.target.value.split('/')[1]].loanAssetPrice
+      };
     }
   };
+
   const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target && event.target.value) {
       setSupplyCapInKind(Number(event.target.value));
@@ -79,17 +82,14 @@ export default function RiskLevels() {
         setSupplyCapUsd(Number(event.target.value) * tokenPrice);
       }
       if (selectedPair && parameters && tokenPrice) {
-        setContextVariables({
-          riskContext: {
-            current: true,
-            pair: selectedPair,
-            LTV: parameters.ltv,
-            liquidationBonus: parameters.bonus,
-            supplyCapInLoanAsset: Number(event.target.value),
-            loanAssetPrice: tokenPrice
-          },
-          datasourcesContext: contextVariables.datasourcesContext
-        });
+        contextVariables.riskContext = {
+          current: true,
+          pair: selectedPair,
+          LTV: parameters.ltv,
+          liquidationBonus: parameters.bonus,
+          supplyCapInLoanAsset: Number(event.target.value),
+          loanAssetPrice: tokenPrice
+        }
       }
     }
   };
@@ -98,39 +98,36 @@ export default function RiskLevels() {
     const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === event.target.value);
     if (foundParam) {
       setSelectedBonus(foundParam.bonus);
-      setParameters(foundParam);
+      contextVariables.morphoRiskParameters = foundParam;
       if (selectedPair && supplyCapInKind && tokenPrice) {
-        setContextVariables({
-          riskContext: {
-            current: true,
-            pair: selectedPair,
-            LTV: foundParam.ltv,
-            liquidationBonus: foundParam.bonus,
-            supplyCapInLoanAsset: supplyCapInKind,
-            loanAssetPrice: tokenPrice
-          },
-          datasourcesContext: contextVariables.datasourcesContext
-        });
+        contextVariables.riskContext = {
+          current: true,
+          pair: selectedPair,
+          LTV: foundParam.ltv,
+          liquidationBonus: foundParam.bonus,
+          supplyCapInLoanAsset: supplyCapInKind,
+          loanAssetPrice: tokenPrice
+        }
       }
     }
   };
 
   //// useEffect to load data
   useEffect(() => {
-    setIsLoading(true);
+    setLoading(true);
     // Define an asynchronous function
     async function fetchData() {
       try {
-        const data = await DataService.GetAvailablePairs('all');
-        const morphoData: OverviewData = await DataService.GetOverview();
-        setMorphoData(morphoData);
+        while(contextVariables.isDataLoading == true) {
+          await sleep(1);
+        }
         const morphoPairs: string[] = [];
-        for (const market in morphoData) {
-          morphoData[market].subMarkets.forEach((subMarket) => {
+        for (const market in contextVariables.overviewData) {
+          contextVariables.overviewData[market].subMarkets.forEach((subMarket) => {
             morphoPairs.push(`${subMarket.base}/${market}`);
           });
         }
-        const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
+        const filteredPairs = contextVariables.availablePairs.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
 
         setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
         if (navPair && filteredPairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
@@ -140,30 +137,28 @@ export default function RiskLevels() {
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === navLTV);
             if (foundParam) {
               setSelectedBonus(foundParam.bonus);
-              setParameters(foundParam);
+              contextVariables.morphoRiskParameters = foundParam;
               if (navSupplyCap && navBasePrice) {
                 setSupplyCapInKind(navSupplyCap);
                 setSupplyCapUsd((navSupplyCap * navBasePrice).toFixed(0) as unknown as number);
-                setContextVariables({
-                  riskContext: {
-                    current: true,
-                    pair: navPair,
-                    LTV: foundParam.ltv,
-                    liquidationBonus: foundParam.bonus,
-                    supplyCapInLoanAsset: navSupplyCap,
-                    loanAssetPrice: navBasePrice
-                  },
-                  datasourcesContext: contextVariables.datasourcesContext
-                });
+                contextVariables.riskContext = {
+                  current: true,
+                  pair: navPair,
+                  LTV: foundParam.ltv,
+                  liquidationBonus: foundParam.bonus,
+                  supplyCapInLoanAsset: navSupplyCap,
+                  loanAssetPrice: navBasePrice
+                }
               }
               setTokenPrice(navBasePrice);
-              const morphoMarketForContext = morphoData[navPair.quote].subMarkets.find(
+              const morphoMarketForContext = contextVariables.overviewData[navPair.quote].subMarkets.find(
                 (_) => _.LTV == foundParam.ltv && _.base == navPair.base
               );
               setBaseTokenPrice(morphoMarketForContext?.basePrice);
             }
           }
         } else if (
+          contextVariables.riskContext &&
           contextVariables.riskContext.current &&
           filteredPairs.some(
             ({ base, quote }) =>
@@ -173,39 +168,39 @@ export default function RiskLevels() {
           setSelectedPair(contextVariables.riskContext.pair);
           setSelectedLTV(contextVariables.riskContext.LTV.toString());
           setSelectedBonus(contextVariables.riskContext.liquidationBonus);
-          setParameters({
+          contextVariables.morphoRiskParameters = {
             ltv: contextVariables.riskContext.LTV,
             bonus: contextVariables.riskContext.liquidationBonus
-          });
+          };
           setSupplyCapUsd(
             contextVariables.riskContext.supplyCapInLoanAsset * contextVariables.riskContext.loanAssetPrice
           );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
-          let morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(
+          let morphoMarketForContext = contextVariables.overviewData[contextVariables.riskContext.pair.quote].subMarkets.find(
             (_) => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base
           );
 
           if (morphoMarketForContext) {
             setBaseTokenPrice(morphoMarketForContext.basePrice);
           } else {
-            morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(
+            morphoMarketForContext = contextVariables.overviewData[contextVariables.riskContext.pair.quote].subMarkets.find(
               (_) => _.base == contextVariables.riskContext.pair.base
             );
             setBaseTokenPrice(morphoMarketForContext?.basePrice);
           }
         } else if (filteredPairs.length > 0) {
-          const firstMarketKey = Object.keys(morphoData)[0];
-          const firstMarket = morphoData[firstMarketKey];
+          const firstMarketKey = Object.keys(contextVariables.overviewData)[0];
+          const firstMarket = contextVariables.overviewData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
           const pairToSet = { base: firstSubMarket.base, quote: firstMarketKey };
           setSelectedPair(pairToSet);
           setSelectedLTV(firstSubMarket.LTV.toString());
           setSelectedBonus(firstSubMarket.liquidationBonus * 10000);
-          setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 });
+          contextVariables.morphoRiskParameters = { ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 };
           setSupplyCapUsd(firstSubMarket.supplyCapUsd);
           setSupplyCapInKind(firstSubMarket.supplyCapInKind);
-          setTokenPrice(morphoData[firstMarketKey].loanAssetPrice);
+          setTokenPrice(contextVariables.overviewData[firstMarketKey].loanAssetPrice);
           setBaseTokenPrice(firstSubMarket.basePrice);
         } else {
         }
@@ -214,7 +209,7 @@ export default function RiskLevels() {
       } catch (error) {
         console.error('Error fetching data:', error);
         setOpenAlert(true);
-        setIsLoading(false);
+        setLoading(false);
         if (error instanceof Error) {
           setAlertMsg(`Error fetching data: ${error.toString()}`);
         } else {
@@ -223,13 +218,17 @@ export default function RiskLevels() {
       }
     }
     fetchData()
-      .then(() => setIsLoading(false))
+      .then(() => {
+        console.log("Setting appContext.loading to false");
+        setLoading(false);
+      })
       .catch(console.error);
   }, []);
 
   if (!selectedPair || !tokenPrice || !supplyCapUsd || !baseTokenPrice) {
     return <RiskLevelGraphsSkeleton />;
   }
+  console.log("Loading: " + (isLoading ? "true" : "false"));
   return (
     <Box sx={{ mt: 10 }}>
       {isLoading ? (

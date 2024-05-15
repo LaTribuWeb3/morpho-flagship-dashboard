@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { LiquidityData, Pair } from '../../models/ApiData';
 import DataService from '../../services/DataService';
 import { Grid, LinearProgress, Skeleton, Typography } from '@mui/material';
@@ -6,6 +6,7 @@ import { SimpleAlert } from '../../components/SimpleAlert';
 import { FriendlyFormatNumber, PercentageFormatter, sleep } from '../../utils/Utils';
 import moment from 'moment';
 import Graph from '../../components/Graph';
+import { AppContext } from '../App';
 export interface RiskLevelGraphsInterface {
   pair: Pair;
   platform: string;
@@ -92,6 +93,7 @@ export function RiskLevelGraphs(props: RiskLevelGraphsInterface) {
         graphData.sort((a, b) => a.blockNumber - b.blockNumber);
         setGraphData(graphData);
         setLiquidityData(data);
+        setIsLoading(false);
         await sleep(1);
       } catch (error) {
         console.error('Error fetching data:', error);

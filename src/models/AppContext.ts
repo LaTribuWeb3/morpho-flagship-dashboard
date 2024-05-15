@@ -1,21 +1,32 @@
-import { Pair } from './ApiData';
+import { LiquidityData, Pair } from './ApiData';
 import { OverviewData } from './OverviewData';
 import { MorphoRiskParameter, MorphoRiskParameters } from './RiskData';
 
 export interface AppContextProperties {
+  availablePairs: Pair[];
+
   chain: string;
-  overviewData: OverviewData;
+
+  data: LiquidityData;
+
+  datasourcesContext: {
+    current: boolean;
+    pair: Pair;
+    datasource: string;
+    slippage: number;
+  };
+  
+  isDataLoading: boolean;
+
   loading: boolean;
-  availablePairs: {
-    [key: string]: Pair[];
+
+  morphoRiskParameters: {
+    ltv: number;
+    bonus: number;
   };
-  pairsByPlatform: {
-    [key: string]: Pair[];
-  };
-  platformsByPair: {
-    [key: string]: string[];
-  };
-  riskParameters: MorphoRiskParameters;
+
+  overviewData: OverviewData;
+
   pages: {
     riskLevels: {
       currentLiquidationThreshold: number;
@@ -33,9 +44,32 @@ export interface AppContextProperties {
       slippage: number;
     };
   };
+
+  pairsByPlatform: {
+    [key: string]: Pair[];
+  };
+
+  platformsByPair: {
+    [key: string]: string[];
+  };
+
+  riskContext: {
+    current: boolean;
+    pair: {
+      base: string;
+      quote: string;
+    };
+    LTV: number;
+    liquidationBonus: number;
+    supplyCapInLoanAsset: number;
+    loanAssetPrice: number;
+  };
+
+  riskParameters: MorphoRiskParameters;
 }
 
 export interface appContextType {
   contextVariables: AppContextProperties;
+
   setContextVariables: React.Dispatch<React.SetStateAction<AppContextProperties>>;
 }

@@ -116,6 +116,7 @@ export default function DataSource() {
 
         const oldPair = selectedPair;
         if (
+          contextVariables.datasourcesContext &&
           contextVariables.datasourcesContext.current &&
           data.some(
             (_) =>
