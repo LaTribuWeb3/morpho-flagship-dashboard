@@ -24,12 +24,11 @@ export default function DataLoadingWrapper() {
       try {
         contextVariables.isDataLoading = true;
 
-        initialContext.contextVariables.overviewData = await computeSortedOverviewData();
-        initialContext.contextVariables.morphoRiskParameters = MORPHO_RISK_PARAMETERS_ARRAY[1];
-        initialContext.contextVariables.pages.riskLevels.availablePairs = await DataService.GetAvailablePairs('all');
-
-        initialContext.contextVariables.pages.riskLevels.selectedLTV = MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString();
-        initialContext.contextVariables.pages.riskLevels.selectedBonus = MORPHO_RISK_PARAMETERS_ARRAY[1].bonus;
+        contextVariables.overviewData = await computeSortedOverviewData();
+        contextVariables.morphoRiskParameters = MORPHO_RISK_PARAMETERS_ARRAY[1];
+        contextVariables.pages.riskLevels.availablePairs = await DataService.GetAvailablePairs('all');
+        contextVariables.pages.riskLevels.selectedLTV = MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString();
+        contextVariables.pages.riskLevels.selectedBonus = MORPHO_RISK_PARAMETERS_ARRAY[1].bonus;
 
         const morphoPairs: string[] = [];
         for (const market in contextVariables.overviewData) {
@@ -102,6 +101,7 @@ export default function DataLoadingWrapper() {
               contextVariables.pages.riskLevels.baseTokenPrice = morphoMarketForContext.basePrice;
           }
         } else if (filteredPairs.length > 0) {
+          console.log("No pair selected");
           const firstMarketKey = Object.keys(contextVariables.overviewData)[0];
           const firstMarket = contextVariables.overviewData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
@@ -117,7 +117,7 @@ export default function DataLoadingWrapper() {
             contextVariables.pages.riskLevels.baseTokenPrice = firstSubMarket.basePrice;
         }
 
-        setContextVariables(initialContext.contextVariables);
+        setContextVariables(contextVariables);
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -134,7 +134,7 @@ export default function DataLoadingWrapper() {
         contextVariables.isDataLoading = false
       })
       .catch(console.error);
-  }, []);
+  }, [navBasePrice, navLTV, navPair, navSupplyCap, contextVariables]);
 
   return (
     <Box

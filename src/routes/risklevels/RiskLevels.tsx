@@ -27,7 +27,11 @@ export default function RiskLevels() {
   const [alertMsg, setAlertMsg] = useState('');
   const pathName = useLocation().pathname;
 
+  console.log("Context value", contextVariables.pages.riskLevels.selectedPair);
+
   useEffect(() => {
+    if(pathName === useLocation().pathname) {}
+    
     const navPair = pathName.split('/')[2]
       ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
       : undefined;
@@ -36,18 +40,29 @@ export default function RiskLevels() {
     const navBasePrice = pathName.split('/')[5] ? Number(pathName.split('/')[5]) : undefined;
 
     if (navPair && navLTV && navSupplyCap && navBasePrice) {
-      contextVariables.pages.riskLevels.selectedPair = navPair;
-      contextVariables.pages.riskLevels.selectedLTV = navLTV;
-      contextVariables.pages.riskLevels.capInKind = navSupplyCap;
-      contextVariables.pages.riskLevels.capUSD = (navSupplyCap * navBasePrice).toFixed(0) as unknown as number;
-      setContextVariables({ ...contextVariables });
+      console.log("Updating navPair, navLTV and stuff")
+      setContextVariables({
+        ...contextVariables,
+        pages: {
+          ...contextVariables.pages,
+          riskLevels: {
+            ...contextVariables.pages.riskLevels,
+            selectedPair: navPair,
+            selectedLTV: navLTV,
+            capInKind: navSupplyCap,
+            capUSD: (navSupplyCap * navBasePrice).toFixed(0) as unknown as number
+          }
+        }
+      });
     }
-  })
+  }, [pathName])
+
+  console.log("pathName:", pathName);
 
   const handleCloseAlert = () => {
     setOpenAlert(false);
   };
-  
+
   const handleChangePair = (event: SelectChangeEvent) => {
     contextVariables.pages.riskLevels.selectedPair = { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] };
     const matchingSubMarket = contextVariables.overviewData[event.target.value.split('/')[1]].subMarkets.find(
@@ -113,7 +128,7 @@ export default function RiskLevels() {
   };
 
   return (
-    contextVariables.isDataLoading ?
+    contextVariables.isDataLoading && isLoading ?
       <RiskLevelGraphsSkeleton /> :
       isLoading ? <RiskLevelGraphsSkeleton /> :
         <Box sx={{ mt: 10 }}>
