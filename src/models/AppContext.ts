@@ -3,8 +3,6 @@ import { OverviewData } from './OverviewData';
 import { MorphoRiskParameter, MorphoRiskParameters } from './RiskData';
 
 export interface AppContextProperties {
-  availablePairs: Pair[];
-
   chain: string;
 
   data: LiquidityData;
@@ -29,6 +27,7 @@ export interface AppContextProperties {
 
   pages: {
     riskLevels: {
+      availablePairs: Pair[];
       baseTokenPrice: number;
       currentLiquidationThreshold: number;
       selectedPair: Pair;

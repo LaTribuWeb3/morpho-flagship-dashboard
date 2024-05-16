@@ -1,6 +1,5 @@
 import { Box } from '@mui/material';
 import React, { createContext } from 'react';
-import { useLocation } from 'react-router-dom';
 import { MainAppBar } from '../components/MainAppBar';
 import { ResponsiveNavBar } from '../components/ResponsiveNavBar';
 import { AppContextProperties, appContextType } from '../models/AppContext';
@@ -18,8 +17,6 @@ function App() {
   const toggleDrawer = () => {
     setOpenDrawer(!openDrawer);
   };
-
-  const pathName = useLocation().pathname;
 
   return (
     <Box sx={{ display: 'flex' }}>

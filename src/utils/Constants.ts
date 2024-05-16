@@ -47,7 +47,6 @@ import { appContextType } from '../models/AppContext';
 
 export const initialContext: appContextType = {
   contextVariables: {
-    availablePairs: [],
     chain: "eth",
     data: {
       updated: 0,
@@ -81,6 +80,7 @@ export const initialContext: appContextType = {
         slippage: 500
       },
       riskLevels: {
+        availablePairs: [],
         baseTokenPrice: 0,
         capInKind: 0,
         capUSD: 0,
