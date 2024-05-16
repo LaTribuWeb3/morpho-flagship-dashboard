@@ -26,7 +26,6 @@ export default function RiskLevels() {
 
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
-  const [baseTokenPrice, setBaseTokenPrice] = useState<number | undefined>(undefined);
   const pathName = useLocation().pathname;
   const navPair = pathName.split('/')[2]
     ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
@@ -50,6 +49,7 @@ export default function RiskLevels() {
       contextVariables.pages.riskLevels.capUSD = matchingSubMarket.supplyCapUsd;
       contextVariables.pages.riskLevels.capInKind = matchingSubMarket.supplyCapInKind;
       contextVariables.pages.riskLevels.tokenPrice = contextVariables.overviewData[event.target.value.split('/')[1]].loanAssetPrice;
+
       updateContextWithNewRiskContext({
         current: true,
         pair: { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] },
@@ -143,7 +143,8 @@ export default function RiskLevels() {
               const morphoMarketForContext = contextVariables.overviewData[navPair.quote].subMarkets.find(
                 (_) => _.LTV == foundParam.ltv && _.base == navPair.base
               );
-              setBaseTokenPrice(morphoMarketForContext?.basePrice);
+              if (morphoMarketForContext)
+                contextVariables.pages.riskLevels.baseTokenPrice = morphoMarketForContext.basePrice;
             }
           }
         } else if (
@@ -170,12 +171,13 @@ export default function RiskLevels() {
           );
 
           if (morphoMarketForContext) {
-            setBaseTokenPrice(morphoMarketForContext.basePrice);
+            contextVariables.pages.riskLevels.baseTokenPrice = morphoMarketForContext.basePrice;
           } else {
             morphoMarketForContext = contextVariables.overviewData[contextVariables.riskContext.pair.quote].subMarkets.find(
               (_) => _.base == contextVariables.riskContext.pair.base
             );
-            setBaseTokenPrice(morphoMarketForContext?.basePrice);
+            if (morphoMarketForContext)
+              contextVariables.pages.riskLevels.baseTokenPrice = morphoMarketForContext.basePrice;
           }
         } else if (filteredPairs.length > 0) {
           const firstMarketKey = Object.keys(contextVariables.overviewData)[0];
@@ -189,7 +191,8 @@ export default function RiskLevels() {
           contextVariables.pages.riskLevels.capUSD = firstSubMarket.supplyCapUsd;
           contextVariables.pages.riskLevels.capInKind = firstSubMarket.supplyCapInKind;
           contextVariables.pages.riskLevels.tokenPrice = contextVariables.overviewData[firstMarketKey].loanAssetPrice;
-          setBaseTokenPrice(firstSubMarket.basePrice);
+          if (firstSubMarket)
+            contextVariables.pages.riskLevels.baseTokenPrice = firstSubMarket.basePrice;
         } else {
         }
 
@@ -213,128 +216,129 @@ export default function RiskLevels() {
       .catch(console.error);
   }, [navBasePrice, navLTV, navPair, navSupplyCap, contextVariables]);
 
-  if (!contextVariables.pages.riskLevels.selectedPair || !contextVariables.pages.riskLevels.tokenPrice || !contextVariables.pages.riskLevels.capUSD || !baseTokenPrice) {
-    return <RiskLevelGraphsSkeleton />;
-  }
-  console.log("Loading: " + (isLoading ? "true" : "false"));
   return (
-    <Box sx={{ mt: 10 }}>
-      {isLoading ? (
-        <RiskLevelGraphsSkeleton />
-      ) : (
-        <Grid container spacing={1} alignItems="baseline" justifyContent="center">
-          {/* First row: pairs select and slippage select */}
-          <Grid
-            item
-            xs={8}
-            sm={6}
-            md={4}
-            lg={3}
-            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
-          >
-            <FormControl>
-              <InputLabel id="pair-select-label">Pair</InputLabel>
-              <Select
-                labelId="pair-select-label"
-                id="pair-select"
-                label="Pair"
-                value={`${contextVariables.pages.riskLevels.selectedPair.base}/${contextVariables.pages.riskLevels.selectedPair.quote}`}
-                onChange={handleChangePair}
+    contextVariables.isDataLoading ?
+      <RiskLevelGraphsSkeleton /> :
+      isLoading ? <RiskLevelGraphsSkeleton /> :
+        <Box sx={{ mt: 10 }}>
+          {(
+            <Grid container spacing={1} alignItems="baseline" justifyContent="center">
+              {/* First row: pairs select and slippage select */}
+              <Grid
+                item
+                xs={8}
+                sm={6}
+                md={4}
+                lg={3}
+                sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
               >
-                {contextVariables.availablePairs.map((pair, index) => (
-                  <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
-                    {`${pair.base}/${pair.quote}`}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid
-            item
-            xs={8}
-            sm={6}
-            md={4}
-            lg={3}
-            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
-          >
-            <FormControl>
-              <InputLabel id="ltv-select-label">LTV</InputLabel>
-              <Select
-                labelId="ltv-select-label"
-                id="ltv-select"
-                value={contextVariables.pages.riskLevels.selectedLTV}
-                label="LTV"
-                variant="outlined"
-                onChange={handleLTVChange}
+                <FormControl>
+                  <InputLabel id="pair-select-label">Pair</InputLabel>
+                  <Select
+                    labelId="pair-select-label"
+                    id="pair-select"
+                    label="Pair"
+                    value={`${contextVariables.pages.riskLevels.selectedPair.base}/${contextVariables.pages.riskLevels.selectedPair.quote}`}
+                    onChange={handleChangePair}
+                  >
+                    {contextVariables.availablePairs.map((pair, index) => (
+                      <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
+                        {`${pair.base}/${pair.quote}`}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid
+                item
+                xs={8}
+                sm={6}
+                md={4}
+                lg={3}
+                sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
               >
-                {MORPHO_RISK_PARAMETERS_ARRAY.map((param, index) => (
-                  <MenuItem key={index} value={param.ltv.toString()}>
-                    {param.ltv * 100}%
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid
-            item
-            xs={8}
-            sm={6}
-            md={4}
-            lg={3}
-            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
-          >
-            <TextField
-              id="bonus-value"
-              label="Liquidation Bonus"
-              variant="outlined"
-              disabled
-              value={`${contextVariables.pages.riskLevels.selectedBonus / 100}%`}
-              InputProps={{
-                readOnly: true // Makes the TextField read-only
-              }}
-            />
-          </Grid>
-          <Grid
-            item
-            xs={8}
-            sm={6}
-            md={4}
-            lg={3}
-            sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
-          >
-            <TextField
-              sx={{
-                '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                  display: 'none'
-                },
-                '& input[type=number]': {
-                  MozAppearance: 'textfield'
+                <FormControl>
+                  <InputLabel id="ltv-select-label">LTV</InputLabel>
+                  <Select
+                    labelId="ltv-select-label"
+                    id="ltv-select"
+                    value={contextVariables.pages.riskLevels.selectedLTV}
+                    label="LTV"
+                    variant="outlined"
+                    onChange={handleLTVChange}
+                  >
+                    {MORPHO_RISK_PARAMETERS_ARRAY.map((param, index) => (
+                      <MenuItem key={index} value={param.ltv.toString()}>
+                        {param.ltv * 100}%
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid
+                item
+                xs={8}
+                sm={6}
+                md={4}
+                lg={3}
+                sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
+              >
+                <TextField
+                  id="bonus-value"
+                  label="Liquidation Bonus"
+                  variant="outlined"
+                  disabled
+                  value={`${contextVariables.pages.riskLevels.selectedBonus / 100}%`}
+                  InputProps={{
+                    readOnly: true // Makes the TextField read-only
+                  }}
+                />
+              </Grid>
+              <Grid
+                item
+                xs={8}
+                sm={6}
+                md={4}
+                lg={3}
+                sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1, justifyContent: 'center' }}
+              >
+                <TextField
+                  sx={{
+                    '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                      display: 'none'
+                    },
+                    '& input[type=number]': {
+                      MozAppearance: 'textfield'
+                    }
+                  }}
+                  required
+                  id="supply-cap-input"
+                  type="number"
+                  label={`Supply Cap in ${contextVariables.pages.riskLevels.selectedPair.quote}`}
+                  value={contextVariables.pages.riskLevels.capInKind}
+                  onChange={handleChangeSupplyCap}
+                />
+                <Typography sx={{ ml: '10px' }}>${FriendlyFormatNumber(contextVariables.pages.riskLevels.capUSD)}</Typography>
+              </Grid>
+              <Grid item xs={12} lg={10}>
+                {
+                  isLoading ?
+                    <RiskLevelGraphsSkeleton /> :
+                    <RiskLevelGraphs
+                      pair={contextVariables.pages.riskLevels.selectedPair}
+                      parameters={parameters}
+                      supplyCap={contextVariables.pages.riskLevels.capUSD}
+                      quotePrice={contextVariables.pages.riskLevels.tokenPrice}
+                      basePrice={contextVariables.pages.riskLevels.baseTokenPrice}
+                      platform={'all'}
+                    />
                 }
-              }}
-              required
-              id="supply-cap-input"
-              type="number"
-              label={`Supply Cap in ${contextVariables.pages.riskLevels.selectedPair.quote}`}
-              value={contextVariables.pages.riskLevels.capInKind}
-              onChange={handleChangeSupplyCap}
-            />
-            <Typography sx={{ ml: '10px' }}>${FriendlyFormatNumber(contextVariables.pages.riskLevels.capUSD)}</Typography>
-          </Grid>
-          <Grid item xs={12} lg={10}>
-            <RiskLevelGraphs
-              pair={contextVariables.pages.riskLevels.selectedPair}
-              parameters={parameters}
-              supplyCap={contextVariables.pages.riskLevels.capUSD}
-              quotePrice={contextVariables.pages.riskLevels.tokenPrice}
-              basePrice={baseTokenPrice}
-              platform={'all'}
-            />
-          </Grid>
-        </Grid>
-      )}
+              </Grid>
+            </Grid>
+          )}
 
-      <SimpleAlert alertMsg={alertMsg} handleCloseAlert={handleCloseAlert} openAlert={openAlert} />
-    </Box>
+          <SimpleAlert alertMsg={alertMsg} handleCloseAlert={handleCloseAlert} openAlert={openAlert} />
+        </Box>
   );
 
   function updateContextWithNewRiskContext(newRiskContext: { current: boolean; pair: { base: string; quote: string; }; LTV: number; liquidationBonus: number; supplyCapInLoanAsset: number; loanAssetPrice: number; }) {

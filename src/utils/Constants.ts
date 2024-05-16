@@ -81,6 +81,7 @@ export const initialContext: appContextType = {
         slippage: 500
       },
       riskLevels: {
+        baseTokenPrice: 0,
         capInKind: 0,
         capUSD: 0,
         currentLiquidationThreshold: 0,

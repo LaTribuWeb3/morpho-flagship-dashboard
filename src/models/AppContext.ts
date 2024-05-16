@@ -29,6 +29,7 @@ export interface AppContextProperties {
 
   pages: {
     riskLevels: {
+      baseTokenPrice: number;
       currentLiquidationThreshold: number;
       selectedPair: Pair;
       selectedRiskParameter: MorphoRiskParameter;
