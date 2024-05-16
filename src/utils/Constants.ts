@@ -101,6 +101,8 @@ export const initialContext: appContextType = {
           supplyCapInUSD: 0,
           visible: true
         },
+        selectedLTV: "",
+        selectedBonus: 0,
         tokenPrice: 0
       }
     },

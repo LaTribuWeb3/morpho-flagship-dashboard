@@ -32,6 +32,8 @@ export interface AppContextProperties {
       currentLiquidationThreshold: number;
       selectedPair: Pair;
       selectedRiskParameter: MorphoRiskParameter;
+      selectedLTV: string;
+      selectedBonus: number;
       capUSD: number;
       capInKind: number;
       tokenPrice: number;

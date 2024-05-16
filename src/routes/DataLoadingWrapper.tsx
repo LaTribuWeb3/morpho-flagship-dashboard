@@ -23,6 +23,9 @@ export default function DataLoadingWrapper() {
         // initialContext.contextVariables.data = await DataService.GetLiquidityData(props.platform, props.pair.base, props.pair.quote);
         initialContext.contextVariables.availablePairs = await DataService.GetAvailablePairs('all');
 
+        initialContext.contextVariables.pages.riskLevels.selectedLTV = MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString(),
+        initialContext.contextVariables.pages.riskLevels.selectedBonus = MORPHO_RISK_PARAMETERS_ARRAY[1].bonus,
+        
         setContextVariables(initialContext.contextVariables);
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
