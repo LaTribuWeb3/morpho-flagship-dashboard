@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { SimpleAlert } from '../../components/SimpleAlert';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 import { FriendlyFormatNumber } from '../../utils/Utils';
 import { AppContext } from '../App';
@@ -19,19 +18,13 @@ import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 
 export default function RiskLevels() {
   const { contextVariables, setContextVariables } = useContext(AppContext);
-  const [isLoading, setLoading] = useState(false);
-
+  const [isLoading, setLoading] = useState(true);
   const parameters = contextVariables.morphoRiskParameters;
-
-  const [openAlert, setOpenAlert] = useState(false);
-  const [alertMsg, setAlertMsg] = useState('');
+  const selectedPair = contextVariables.pages.riskLevels.selectedPair;
   const pathName = useLocation().pathname;
 
-  console.log("Context value", contextVariables.pages.riskLevels.selectedPair);
 
   useEffect(() => {
-    if(pathName === useLocation().pathname) {}
-    
     const navPair = pathName.split('/')[2]
       ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
       : undefined;
@@ -40,7 +33,6 @@ export default function RiskLevels() {
     const navBasePrice = pathName.split('/')[5] ? Number(pathName.split('/')[5]) : undefined;
 
     if (navPair && navLTV && navSupplyCap && navBasePrice) {
-      console.log("Updating navPair, navLTV and stuff")
       setContextVariables({
         ...contextVariables,
         pages: {
@@ -55,13 +47,8 @@ export default function RiskLevels() {
         }
       });
     }
+    setLoading(false);
   }, [pathName])
-
-  console.log("pathName:", pathName);
-
-  const handleCloseAlert = () => {
-    setOpenAlert(false);
-  };
 
   const handleChangePair = (event: SelectChangeEvent) => {
     contextVariables.pages.riskLevels.selectedPair = { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] };
@@ -110,8 +97,11 @@ export default function RiskLevels() {
     contextVariables.pages.riskLevels.selectedLTV = event.target.value;
     const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === event.target.value);
     if (foundParam) {
-      contextVariables.pages.riskLevels.selectedBonus = foundParam.bonus;
-      contextVariables.morphoRiskParameters = foundParam;
+      setContextVariables({... contextVariables, morphoRiskParameters: foundParam,
+        pages: {... contextVariables.pages, 
+          riskLevels: {... contextVariables.pages.riskLevels, 
+        selectedBonus : foundParam.bonus,
+      }} })
       if (contextVariables.pages.riskLevels.selectedPair
         && contextVariables.pages.riskLevels.capInKind
         && contextVariables.pages.riskLevels.tokenPrice) {
@@ -149,7 +139,7 @@ export default function RiskLevels() {
                     labelId="pair-select-label"
                     id="pair-select"
                     label="Pair"
-                    value={`${contextVariables.pages.riskLevels.selectedPair.base}/${contextVariables.pages.riskLevels.selectedPair.quote}`}
+                    value={`${selectedPair.base}/${selectedPair.quote}`}
                     onChange={handleChangePair}
                   >
                     {contextVariables.pages.riskLevels.availablePairs.map((pair, index) => (
@@ -248,7 +238,6 @@ export default function RiskLevels() {
             </Grid>
           )}
 
-          <SimpleAlert alertMsg={alertMsg} handleCloseAlert={handleCloseAlert} openAlert={openAlert} />
         </Box>
   );
 
