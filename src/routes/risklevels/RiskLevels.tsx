@@ -17,7 +17,7 @@ import { SimpleAlert } from '../../components/SimpleAlert';
 import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 import { useLocation } from 'react-router-dom';
-import { OverviewData } from '../../models/OverviewData';
+import { OverviewData, SubMarket } from '../../models/OverviewData';
 import { AppContext } from '../App';
 import { AppContextType } from '../../models/Context';
 
@@ -27,7 +27,6 @@ export default function RiskLevels() {
   const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
-  const [morphoData, setMorphoData] = useState<OverviewData>({});
   const [supplyCapUsd, setSupplyCapUsd] = useState<number | undefined>(undefined);
   const [supplyCapInKind, setSupplyCapInKind] = useState<number | undefined>(undefined);
   const [tokenPrice, setTokenPrice] = useState<number | undefined>(undefined);
@@ -49,7 +48,7 @@ export default function RiskLevels() {
   };
   const handleChangePair = (event: SelectChangeEvent) => {
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
-    const matchingSubMarket = morphoData[event.target.value.split('/')[1]].subMarkets.find(
+    const matchingSubMarket: SubMarket | undefined = contextVariables.morphoData[event.target.value.split('/')[1]].subMarkets.find(
       (subMarket) => subMarket.base === event.target.value.split('/')[0]
     );
     if (matchingSubMarket) {
@@ -58,7 +57,7 @@ export default function RiskLevels() {
       setParameters({ ltv: matchingSubMarket.LTV, bonus: matchingSubMarket.liquidationBonus * 10000 });
       setSupplyCapUsd(matchingSubMarket.supplyCapUsd);
       setSupplyCapInKind(matchingSubMarket.supplyCapInKind);
-      setTokenPrice(morphoData[event.target.value.split('/')[1]].loanAssetPrice);
+      setTokenPrice(contextVariables.morphoData[event.target.value.split('/')[1]].loanAssetPrice);
       setContextVariables({
         ...contextVariables,
         riskContext: {
@@ -67,7 +66,7 @@ export default function RiskLevels() {
           LTV: matchingSubMarket.LTV,
           liquidationBonus: matchingSubMarket.liquidationBonus * 10000,
           supplyCapInLoanAsset: matchingSubMarket.supplyCapInKind,
-          loanAssetPrice: morphoData[event.target.value.split('/')[1]].loanAssetPrice
+          loanAssetPrice: contextVariables.morphoData[event.target.value.split('/')[1]].loanAssetPrice
         },
         datasourcesContext: contextVariables.datasourcesContext
       });
@@ -126,7 +125,7 @@ export default function RiskLevels() {
       try {
         const data = await DataService.GetAvailablePairs('all');
         const morphoData: OverviewData = await DataService.GetOverview();
-        setMorphoData(morphoData);
+        contextVariables.morphoData = morphoData;
         const morphoPairs: string[] = [];
         for (const market in morphoData) {
           morphoData[market].subMarkets.forEach((subMarket) => {

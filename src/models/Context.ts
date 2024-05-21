@@ -2,6 +2,7 @@ import { Pair } from './ApiData';
 import { OverviewData } from './OverviewData';
 
 export interface ContextVariables {
+  morphoData: OverviewData;
   overviewData: OverviewData;
   isDataLoading: boolean;
   riskContext: {

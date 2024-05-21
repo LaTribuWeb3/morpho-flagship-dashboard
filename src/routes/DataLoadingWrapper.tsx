@@ -13,12 +13,10 @@ export default function DataLoadingWrapper() {
   // You should check the context here
 
   useEffect(() => {
-    console.log("useEffect");
     async function fetchData() {
       try {
         contextVariables.isDataLoading = true;
         setContextVariables(contextVariables);
-
 
         const overviewData: OverviewData = await DataService.GetOverview();
         const entries = Object.entries(overviewData);
@@ -45,7 +43,22 @@ export default function DataLoadingWrapper() {
         setContextVariables(contextVariables);
       })
       .catch(console.error);
-  }, [contextVariables, setContextVariables]);
+  }, [setContextVariables,
+    contextVariables.morphoData,
+    contextVariables.overviewData,
+    contextVariables.riskContext,
+    contextVariables.riskContext.current,
+    contextVariables.riskContext.pair,
+    contextVariables.riskContext.LTV,
+    contextVariables.riskContext.liquidationBonus,
+    contextVariables.riskContext.supplyCapInLoanAsset,
+    contextVariables.riskContext.loanAssetPrice,
+    contextVariables.datasourcesContext,
+    contextVariables.datasourcesContext.current,
+    contextVariables.datasourcesContext.pair,
+    contextVariables.datasourcesContext.datasource,
+    contextVariables.datasourcesContext.slippage
+  ]);
 
   return (
     <Box

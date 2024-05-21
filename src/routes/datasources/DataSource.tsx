@@ -57,6 +57,9 @@ export default function DataSource() {
     setPlatform(event.target.value);
     if (selectedPair) {
       setContextVariables({
+        morphoData: {},
+        overviewData: {},
+        isDataLoading: false,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -72,6 +75,9 @@ export default function DataSource() {
     setSelectedSlippage(Number(event.target.value));
     if (selectedPair) {
       setContextVariables({
+        morphoData: {},
+        overviewData: {},
+        isDataLoading: false,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -87,6 +93,9 @@ export default function DataSource() {
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
     if (platform) {
       setContextVariables({
+        morphoData: {},
+        overviewData: {},
+        isDataLoading: false,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,

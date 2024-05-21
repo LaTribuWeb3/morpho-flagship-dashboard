@@ -1,10 +1,8 @@
 import { Box } from '@mui/material';
 import React, { createContext } from 'react';
-import { ResponsiveNavBar } from '../components/ResponsiveNavBar';
-import { MainAppBar } from '../components/MainAppBar';
-import { Outlet } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { Overview } from './overview/Overview';
+import { MainAppBar } from '../components/MainAppBar';
+import { ResponsiveNavBar } from '../components/ResponsiveNavBar';
 import { AppContextType, ContextVariables } from '../models/Context';
 import DataLoadingWrapper from './DataLoadingWrapper';
 
@@ -12,6 +10,9 @@ const drawerWidth = 240;
 
 const defaultContextValue: AppContextType = {
   contextVariables: {
+    isDataLoading: false,
+    overviewData: {},
+    morphoData: {},
     riskContext: {
       current: false,
       pair: { base: '', quote: '' },
@@ -27,7 +28,7 @@ const defaultContextValue: AppContextType = {
       slippage: 0
     }
   },
-  setContextVariables: () => {}
+  setContextVariables: () => { }
 };
 export const AppContext = createContext<AppContextType>(defaultContextValue);
 
@@ -36,6 +37,7 @@ function App() {
   const [contextVariables, setContextVariables] = React.useState<ContextVariables>({
     isDataLoading: false,
     overviewData: {},
+    morphoData: {},
     riskContext: {
       current: false,
       pair: { base: '', quote: '' },
