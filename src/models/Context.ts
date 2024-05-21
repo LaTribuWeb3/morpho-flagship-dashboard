@@ -1,6 +1,7 @@
 import { Pair } from './ApiData';
 
 export interface ContextVariables {
+  isDataLoading: boolean;
   riskContext: {
     current: boolean;
     pair: Pair;
