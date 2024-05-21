@@ -60,6 +60,7 @@ export default function RiskLevels() {
       setSupplyCapInKind(matchingSubMarket.supplyCapInKind);
       setTokenPrice(morphoData[event.target.value.split('/')[1]].loanAssetPrice);
       setContextVariables({
+        ...contextVariables,
         riskContext: {
           current: true,
           pair: { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] },
@@ -80,6 +81,7 @@ export default function RiskLevels() {
       }
       if (selectedPair && parameters && tokenPrice) {
         setContextVariables({
+          ...contextVariables,
           riskContext: {
             current: true,
             pair: selectedPair,
@@ -101,6 +103,7 @@ export default function RiskLevels() {
       setParameters(foundParam);
       if (selectedPair && supplyCapInKind && tokenPrice) {
         setContextVariables({
+          ...contextVariables,
           riskContext: {
             current: true,
             pair: selectedPair,
@@ -145,6 +148,7 @@ export default function RiskLevels() {
                 setSupplyCapInKind(navSupplyCap);
                 setSupplyCapUsd((navSupplyCap * navBasePrice).toFixed(0) as unknown as number);
                 setContextVariables({
+                  ...contextVariables,
                   riskContext: {
                     current: true,
                     pair: navPair,
@@ -180,12 +184,12 @@ export default function RiskLevels() {
           );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
-          let morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
+          let morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
 
-          if(morphoMarketForContext) {
+          if (morphoMarketForContext) {
             setBaseTokenPrice(morphoMarketForContext.basePrice);
           } else {
-            morphoMarketForContext =  morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
+            morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
             setBaseTokenPrice(morphoMarketForContext?.basePrice);
           }
         } else if (filteredPairs.length > 0) {
@@ -201,7 +205,6 @@ export default function RiskLevels() {
           setSupplyCapInKind(firstSubMarket.supplyCapInKind);
           setTokenPrice(morphoData[firstMarketKey].loanAssetPrice);
           setBaseTokenPrice(firstSubMarket.basePrice);
-        } else {
         }
 
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
