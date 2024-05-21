@@ -4,6 +4,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { sleep } from '../utils/Utils';
 import { AppContext } from './App';
 import { Overview } from './overview/Overview';
+import { OverviewData } from '../models/OverviewData';
+import DataService from '../services/DataService';
 
 export default function DataLoadingWrapper() {
   const pathName = useLocation().pathname;
@@ -16,9 +18,18 @@ export default function DataLoadingWrapper() {
       try {
         contextVariables.isDataLoading = true;
         setContextVariables(contextVariables);
+
+
+        const overviewData: OverviewData = await DataService.GetOverview();
+        const entries = Object.entries(overviewData);
+        entries.sort((a, b) => b[1].riskLevel - a[1].riskLevel);
+        contextVariables.overviewData = entries.reduce((acc, [symbol, data]) => {
+          acc[symbol] = data;
+          return acc;
+        }, {} as OverviewData);
+
         await sleep(1000);
         contextVariables.isDataLoading = false;
-        setContextVariables(contextVariables);
       } catch (error) {
         console.error('Error fetching data:', error);
         if (error instanceof Error) {

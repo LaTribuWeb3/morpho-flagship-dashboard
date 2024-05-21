@@ -35,6 +35,7 @@ function App() {
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [contextVariables, setContextVariables] = React.useState<ContextVariables>({
     isDataLoading: false,
+    overviewData: {},
     riskContext: {
       current: false,
       pair: { base: '', quote: '' },

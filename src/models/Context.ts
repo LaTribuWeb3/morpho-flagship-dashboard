@@ -1,6 +1,8 @@
 import { Pair } from './ApiData';
+import { OverviewData } from './OverviewData';
 
 export interface ContextVariables {
+  overviewData: OverviewData;
   isDataLoading: boolean;
   riskContext: {
     current: boolean;
