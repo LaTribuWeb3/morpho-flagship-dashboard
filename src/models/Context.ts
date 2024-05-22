@@ -12,6 +12,7 @@ export interface ContextVariables {
     liquidationBonus: number;
     supplyCapInLoanAsset: number;
     loanAssetPrice: number;
+    availablePairs: Pair[];
   };
   datasourcesContext: {
     current: boolean;

@@ -6,6 +6,7 @@ import { AppContext } from './App';
 import { Overview } from './overview/Overview';
 import { OverviewData } from '../models/OverviewData';
 import DataService from '../services/DataService';
+import { Pair } from '../models/ApiData';
 
 export default function DataLoadingWrapper() {
   const pathName = useLocation().pathname;
@@ -25,6 +26,12 @@ export default function DataLoadingWrapper() {
           acc[symbol] = data;
           return acc;
         }, {} as OverviewData);
+
+        const { filteredPairs, morphoData }: { filteredPairs: Pair[]; morphoData: OverviewData; } =
+          await DataService.getMorphoPairsAndData();
+
+        contextVariables.morphoData = morphoData;
+        contextVariables.riskContext.availablePairs = filteredPairs.sort((a, b) => a.base.localeCompare(b.base));
 
         await sleep(1000);
         contextVariables.isDataLoading = false;

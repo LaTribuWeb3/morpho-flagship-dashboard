@@ -44,7 +44,8 @@ function App() {
       LTV: 0,
       liquidationBonus: 0,
       supplyCapInLoanAsset: 0,
-      loanAssetPrice: 0
+      loanAssetPrice: 0,
+      availablePairs: []
     },
     datasourcesContext: { current: false, pair: { base: '', quote: '' }, datasource: '', slippage: 0 }
   });

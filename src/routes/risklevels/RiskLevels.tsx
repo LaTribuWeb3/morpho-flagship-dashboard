@@ -23,7 +23,6 @@ import { AppContextType } from '../../models/Context';
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
-  const [availablePairs, setAvailablePairs] = useState<Pair[]>([]);
   const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
@@ -61,6 +60,7 @@ export default function RiskLevels() {
       setContextVariables({
         ...contextVariables,
         riskContext: {
+          ...contextVariables.riskContext,
           current: true,
           pair: { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] },
           LTV: matchingSubMarket.LTV,
@@ -82,6 +82,7 @@ export default function RiskLevels() {
         setContextVariables({
           ...contextVariables,
           riskContext: {
+            ...contextVariables.riskContext,
             current: true,
             pair: selectedPair,
             LTV: parameters.ltv,
@@ -104,6 +105,7 @@ export default function RiskLevels() {
         setContextVariables({
           ...contextVariables,
           riskContext: {
+            ...contextVariables.riskContext,
             current: true,
             pair: selectedPair,
             LTV: foundParam.ltv,
@@ -123,13 +125,8 @@ export default function RiskLevels() {
     // Define an asynchronous function
     async function fetchData() {
       try {
-        const { filteredPairs, morphoData }: { filteredPairs: Pair[]; morphoData: OverviewData; } =
-          await DataService.getMorphoPairsAndData();
 
-        contextVariables.morphoData = morphoData;
-        setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
-        
-        if (navPair && filteredPairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
+        if (navPair && contextVariables.riskContext.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
             setSelectedLTV(navLTV);
@@ -143,6 +140,7 @@ export default function RiskLevels() {
                 setContextVariables({
                   ...contextVariables,
                   riskContext: {
+                    ...contextVariables.riskContext,
                     current: true,
                     pair: navPair,
                     LTV: foundParam.ltv,
@@ -154,13 +152,13 @@ export default function RiskLevels() {
                 });
               }
               setTokenPrice(navBasePrice);
-              const morphoMarketForContext = morphoData[navPair.quote].subMarkets.find(_ => _.LTV == foundParam.ltv && _.base == navPair.base);
+              const morphoMarketForContext = contextVariables.morphoData[navPair.quote].subMarkets.find(_ => _.LTV == foundParam.ltv && _.base == navPair.base);
               setBaseTokenPrice(morphoMarketForContext?.basePrice);
             }
           }
         } else if (
           contextVariables.riskContext.current &&
-          filteredPairs.some(
+          contextVariables.riskContext.availablePairs.some(
             ({ base, quote }) =>
               base === contextVariables.riskContext.pair.base && quote === contextVariables.riskContext.pair.quote
           )
@@ -177,17 +175,17 @@ export default function RiskLevels() {
           );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
-          let morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
+          let morphoMarketForContext = contextVariables.morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
 
           if (morphoMarketForContext) {
             setBaseTokenPrice(morphoMarketForContext.basePrice);
           } else {
-            morphoMarketForContext = morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
+            morphoMarketForContext = contextVariables.morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
             setBaseTokenPrice(morphoMarketForContext?.basePrice);
           }
-        } else if (filteredPairs.length > 0) {
-          const firstMarketKey = Object.keys(morphoData)[0];
-          const firstMarket = morphoData[firstMarketKey];
+        } else if (contextVariables.riskContext.availablePairs.length > 0) {
+          const firstMarketKey = Object.keys(contextVariables.morphoData)[0];
+          const firstMarket = contextVariables.morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
           const pairToSet = { base: firstSubMarket.base, quote: firstMarketKey };
           setSelectedPair(pairToSet);
@@ -196,7 +194,7 @@ export default function RiskLevels() {
           setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 });
           setSupplyCapUsd(firstSubMarket.supplyCapUsd);
           setSupplyCapInKind(firstSubMarket.supplyCapInKind);
-          setTokenPrice(morphoData[firstMarketKey].loanAssetPrice);
+          setTokenPrice(contextVariables.morphoData[firstMarketKey].loanAssetPrice);
           setBaseTokenPrice(firstSubMarket.basePrice);
         }
 
@@ -244,7 +242,7 @@ export default function RiskLevels() {
                 value={`${selectedPair.base}/${selectedPair.quote}`}
                 onChange={handleChangePair}
               >
-                {availablePairs.map((pair, index) => (
+                {contextVariables.riskContext.availablePairs.map((pair, index) => (
                   <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
                     {`${pair.base}/${pair.quote}`}
                   </MenuItem>
