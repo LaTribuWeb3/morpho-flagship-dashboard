@@ -35,6 +35,9 @@ export default function RiskLevels() {
   const { contextVariables, setContextVariables } = useContext<AppContextType>(AppContext);
   const selectedPair = contextVariables.riskContext.selectedPair;
   const pathName = useLocation().pathname;
+  const navPair = pathName.split('/')[2]
+    ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
+    : undefined;
   const navLTV = pathName.split('/')[3] ? pathName.split('/')[3] : undefined;
   const navSupplyCap = pathName.split('/')[4] ? Number(pathName.split('/')[4]) : undefined;
   const navBasePrice = pathName.split('/')[5] ? Number(pathName.split('/')[5]) : undefined;
@@ -122,9 +125,9 @@ export default function RiskLevels() {
     // Define an asynchronous function
     async function fetchData() {
       try {
-        console.log(contextVariables);
 
-        if (contextVariables.riskContext.availablePairs.some(({ base, quote }) => base === contextVariables.riskContext.selectedPair.base && quote === contextVariables.riskContext.selectedPair.quote)) {
+        if (navPair && contextVariables.riskContext.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
+          contextVariables.riskContext.selectedPair = navPair;
           if (navLTV) {
             setSelectedLTV(navLTV);
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === navLTV);
@@ -139,7 +142,7 @@ export default function RiskLevels() {
                   riskContext: {
                     ...contextVariables.riskContext,
                     current: true,
-                    pair: contextVariables.riskContext.selectedPair,
+                    pair: navPair,
                     LTV: foundParam.ltv,
                     liquidationBonus: foundParam.bonus,
                     supplyCapInLoanAsset: navSupplyCap,
@@ -149,8 +152,7 @@ export default function RiskLevels() {
                 });
               }
               setTokenPrice(navBasePrice);
-              const morphoMarketForContext = contextVariables.riskContext.morphoData[contextVariables.riskContext.selectedPair.quote].subMarkets
-                .find(_ => _.LTV == foundParam.ltv && _.base == contextVariables.riskContext.selectedPair.base);
+              const morphoMarketForContext = contextVariables.riskContext.morphoData[navPair.quote].subMarkets.find(_ => _.LTV == foundParam.ltv && _.base == navPair.base);
               setBaseTokenPrice(morphoMarketForContext?.basePrice);
             }
           }
@@ -211,7 +213,7 @@ export default function RiskLevels() {
     fetchData()
       .then(() => setIsLoading(false))
       .catch(console.error);
-  }, [contextVariables, navBasePrice, navLTV, navSupplyCap, setContextVariables]);
+  }, [contextVariables, navBasePrice, navLTV, navPair, navSupplyCap, setContextVariables]);
 
   if (!contextVariables.riskContext.selectedPair || !tokenPrice || !supplyCapUsd || !baseTokenPrice) {
     console.log("Returning only skeleton");
