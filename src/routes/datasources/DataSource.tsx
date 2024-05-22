@@ -1,26 +1,23 @@
-import Box from '@mui/material/Box';
-import { useContext, useEffect, useState } from 'react';
-import DataService from '../../services/DataService';
-import { Pair } from '../../models/ApiData';
 import {
+  FormControl,
   Grid,
+  InputLabel,
   LinearProgress,
   MenuItem,
   Select,
   SelectChangeEvent,
   Skeleton,
-  Typography,
-  FormControl,
-  InputLabel
+  Typography
 } from '@mui/material';
+import Box from '@mui/material/Box';
+import { useContext, useEffect, useState } from 'react';
 import { SimpleAlert } from '../../components/SimpleAlert';
-import { SLIPPAGES_BPS } from '../../utils/Constants';
-import { DataSourceGraphs } from './DataSourceGraphs';
-import { sleep } from '../../utils/Utils';
-import { DATA_SOURCES, DATA_SOURCES_MAP } from '../../utils/Constants';
+import { Pair } from '../../models/ApiData';
 import { AppContextType } from '../../models/Context';
+import { DATA_SOURCES, DATA_SOURCES_MAP, SLIPPAGES_BPS } from '../../utils/Constants';
+import { sleep } from '../../utils/Utils';
 import { AppContext } from '../App';
-import { OverviewData } from '../../models/OverviewData';
+import { DataSourceGraphs } from './DataSourceGraphs';
 
 function DataSourceSkeleton() {
   return (

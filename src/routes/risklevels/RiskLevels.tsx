@@ -10,16 +10,15 @@ import {
   Typography
 } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
-import DataService from '../../services/DataService';
-import { Pair } from '../../models/ApiData';
-import { FriendlyFormatNumber, sleep } from '../../utils/Utils';
-import { SimpleAlert } from '../../components/SimpleAlert';
-import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
-import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 import { useLocation } from 'react-router-dom';
-import { OverviewData, SubMarket } from '../../models/OverviewData';
-import { AppContext } from '../App';
+import { SimpleAlert } from '../../components/SimpleAlert';
+import { Pair } from '../../models/ApiData';
 import { AppContextType } from '../../models/Context';
+import { SubMarket } from '../../models/OverviewData';
+import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
+import { FriendlyFormatNumber, sleep } from '../../utils/Utils';
+import { AppContext } from '../App';
+import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);

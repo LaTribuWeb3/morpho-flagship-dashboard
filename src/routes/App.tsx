@@ -55,8 +55,6 @@ function App() {
     setOpenDrawer(!openDrawer);
   };
 
-  const pathName = useLocation().pathname;
-
   return (
     <Box sx={{ display: 'flex' }}>
       <AppContext.Provider value={{ contextVariables, setContextVariables }}>
