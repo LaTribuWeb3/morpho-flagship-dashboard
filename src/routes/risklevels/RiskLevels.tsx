@@ -123,18 +123,12 @@ export default function RiskLevels() {
     // Define an asynchronous function
     async function fetchData() {
       try {
-        const data = await DataService.GetAvailablePairs('all');
-        const morphoData: OverviewData = await DataService.GetOverview();
-        contextVariables.morphoData = morphoData;
-        const morphoPairs: string[] = [];
-        for (const market in morphoData) {
-          morphoData[market].subMarkets.forEach((subMarket) => {
-            morphoPairs.push(`${subMarket.base}/${market}`);
-          });
-        }
-        const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
+        const { filteredPairs, morphoData }: { filteredPairs: Pair[]; morphoData: OverviewData; } =
+          await DataService.getMorphoPairsAndData();
 
+        contextVariables.morphoData = morphoData;
         setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
+        
         if (navPair && filteredPairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
