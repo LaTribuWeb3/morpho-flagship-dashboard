@@ -4,6 +4,7 @@ import { OverviewData } from './OverviewData';
 export interface ContextVariables {
   overviewData: OverviewData;
   isDataLoading: boolean;
+  availablePairs: Pair[];
   riskContext: {
     morphoData: OverviewData;
     current: boolean;
@@ -12,7 +13,6 @@ export interface ContextVariables {
     liquidationBonus: number;
     supplyCapInLoanAsset: number;
     loanAssetPrice: number;
-    availablePairs: Pair[];
   };
   datasourcesContext: {
     current: boolean;

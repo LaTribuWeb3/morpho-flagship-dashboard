@@ -33,7 +33,7 @@ export default function DataLoadingWrapper() {
           await DataService.getMorphoPairsAndData();
 
         contextVariables.riskContext.morphoData = morphoData;
-        contextVariables.riskContext.availablePairs = filteredPairs.sort((a, b) => a.base.localeCompare(b.base));
+        contextVariables.availablePairs = filteredPairs.sort((a, b) => a.base.localeCompare(b.base));
 
         await sleep(1000);
         contextVariables.isDataLoading = false;

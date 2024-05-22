@@ -55,6 +55,7 @@ export default function DataSource() {
       setContextVariables({
         overviewData: {},
         isDataLoading: false,
+        availablePairs: contextVariables.availablePairs,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -72,6 +73,7 @@ export default function DataSource() {
       setContextVariables({
         overviewData: {},
         isDataLoading: false,
+        availablePairs: contextVariables.availablePairs,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -89,6 +91,7 @@ export default function DataSource() {
       setContextVariables({
         overviewData: {},
         isDataLoading: false,
+        availablePairs: contextVariables.availablePairs,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -108,7 +111,7 @@ export default function DataSource() {
         const oldPair = selectedPair;
         if (
           contextVariables.datasourcesContext.current &&
-          contextVariables.riskContext.availablePairs.some(
+          contextVariables.availablePairs.some(
             (_) =>
               _.base == contextVariables.datasourcesContext.pair.base &&
               _.quote == contextVariables.datasourcesContext.pair.quote
@@ -117,10 +120,10 @@ export default function DataSource() {
           setSelectedPair(contextVariables.datasourcesContext.pair);
           setSelectedSlippage(contextVariables.datasourcesContext.slippage);
           setPlatform(contextVariables.datasourcesContext.datasource);
-        } else if (oldPair && contextVariables.riskContext.availablePairs.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
+        } else if (oldPair && contextVariables.availablePairs.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
           setSelectedPair(oldPair);
         } else {
-          setSelectedPair(contextVariables.riskContext.availablePairs[0]);
+          setSelectedPair(contextVariables.availablePairs[0]);
         }
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
@@ -185,7 +188,7 @@ export default function DataSource() {
               label="Pair"
               onChange={handleChangePair}
             >
-              {contextVariables.riskContext.availablePairs.map((pair, index) => (
+              {contextVariables.availablePairs.map((pair, index) => (
                 <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
                   {`${pair.base}/${pair.quote}`}
                 </MenuItem>

@@ -11,9 +11,9 @@ const defaultContextValue: AppContextType = {
   contextVariables: {
     isDataLoading: false,
     overviewData: {},
+    availablePairs: [],
     riskContext: {
       morphoData: {},
-      availablePairs: [],
       current: false,
       pair: { base: '', quote: '' },
       LTV: 0,
@@ -37,6 +37,7 @@ function App() {
   const [contextVariables, setContextVariables] = React.useState<ContextVariables>({
     isDataLoading: false,
     overviewData: {},
+    availablePairs: [],
     riskContext: {
       morphoData: {},
       current: false,
@@ -44,8 +45,7 @@ function App() {
       LTV: 0,
       liquidationBonus: 0,
       supplyCapInLoanAsset: 0,
-      loanAssetPrice: 0,
-      availablePairs: []
+      loanAssetPrice: 0
     },
     datasourcesContext: { current: false, pair: { base: '', quote: '' }, datasource: '', slippage: 0 }
   });

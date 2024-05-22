@@ -125,7 +125,7 @@ export default function RiskLevels() {
     async function fetchData() {
       try {
 
-        if (navPair && contextVariables.riskContext.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
+        if (navPair && contextVariables.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
           if (navLTV) {
             setSelectedLTV(navLTV);
@@ -157,7 +157,7 @@ export default function RiskLevels() {
           }
         } else if (
           contextVariables.riskContext.current &&
-          contextVariables.riskContext.availablePairs.some(
+          contextVariables.availablePairs.some(
             ({ base, quote }) =>
               base === contextVariables.riskContext.pair.base && quote === contextVariables.riskContext.pair.quote
           )
@@ -182,7 +182,7 @@ export default function RiskLevels() {
             morphoMarketForContext = contextVariables.riskContext.morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
             setBaseTokenPrice(morphoMarketForContext?.basePrice);
           }
-        } else if (contextVariables.riskContext.availablePairs.length > 0) {
+        } else if (contextVariables.availablePairs.length > 0) {
           const firstMarketKey = Object.keys(contextVariables.riskContext.morphoData)[0];
           const firstMarket = contextVariables.riskContext.morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
@@ -241,7 +241,7 @@ export default function RiskLevels() {
                 value={`${selectedPair.base}/${selectedPair.quote}`}
                 onChange={handleChangePair}
               >
-                {contextVariables.riskContext.availablePairs.map((pair, index) => (
+                {contextVariables.availablePairs.map((pair, index) => (
                   <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
                     {`${pair.base}/${pair.quote}`}
                   </MenuItem>
