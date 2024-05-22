@@ -41,7 +41,6 @@ function DataSourceSkeleton() {
 
 export default function DataSource() {
   const [isLoading, setIsLoading] = useState(true);
-  const [availablePairs, setAvailablePairs] = useState<Pair[]>([]);
   const [selectedSlippage, setSelectedSlippage] = useState(500);
   const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
@@ -57,7 +56,6 @@ export default function DataSource() {
     setPlatform(event.target.value);
     if (selectedPair) {
       setContextVariables({
-        morphoData: {},
         overviewData: {},
         isDataLoading: false,
         riskContext: contextVariables.riskContext,
@@ -110,22 +108,10 @@ export default function DataSource() {
     // Define an asynchronous function
     async function fetchData() {
       try {
-        const data = await DataService.GetAvailablePairs(platform);
-        const morphoData: OverviewData = await DataService.GetOverview();
-        const morphoPairs: string[] = [];
-        for (const market in morphoData) {
-          morphoData[market].subMarkets.forEach((subMarket) => {
-            morphoPairs.push(`${subMarket.base}/${market}`);
-          });
-        }
-        const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
-        setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
-
-
         const oldPair = selectedPair;
         if (
           contextVariables.datasourcesContext.current &&
-          data.some(
+          contextVariables.riskContext.availablePairs.some(
             (_) =>
               _.base == contextVariables.datasourcesContext.pair.base &&
               _.quote == contextVariables.datasourcesContext.pair.quote
@@ -134,10 +120,10 @@ export default function DataSource() {
           setSelectedPair(contextVariables.datasourcesContext.pair);
           setSelectedSlippage(contextVariables.datasourcesContext.slippage);
           setPlatform(contextVariables.datasourcesContext.datasource);
-        } else if (oldPair && data.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
+        } else if (oldPair && contextVariables.riskContext.availablePairs.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
           setSelectedPair(oldPair);
         } else {
-          setSelectedPair(filteredPairs[0]);
+          setSelectedPair(contextVariables.riskContext.availablePairs[0]);
         }
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
@@ -202,7 +188,7 @@ export default function DataSource() {
               label="Pair"
               onChange={handleChangePair}
             >
-              {availablePairs.map((pair, index) => (
+              {contextVariables.riskContext.availablePairs.map((pair, index) => (
                 <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
                   {`${pair.base}/${pair.quote}`}
                 </MenuItem>
