@@ -7,6 +7,8 @@ import { Overview } from './overview/Overview';
 import { OverviewData } from '../models/OverviewData';
 import DataService from '../services/DataService';
 import { Pair } from '../models/ApiData';
+import clone from 'just-clone';
+import { ContextVariables } from '../models/Context';
 
 export default function DataLoadingWrapper() {
   const pathName = useLocation().pathname;
@@ -46,9 +48,11 @@ export default function DataLoadingWrapper() {
       }
     }
 
+    const contextViablesClone: ContextVariables = clone(contextVariables);
+
     fetchData()
       .then(() => {
-        setContextVariables(contextVariables);
+        if (JSON.stringify(contextVariables) !== JSON.stringify(contextViablesClone)) setContextVariables(contextVariables);
       })
       .catch(console.error);
   }, [setContextVariables, contextVariables]);
