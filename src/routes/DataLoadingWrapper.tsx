@@ -30,7 +30,7 @@ export default function DataLoadingWrapper() {
         const { filteredPairs, morphoData }: { filteredPairs: Pair[]; morphoData: OverviewData; } =
           await DataService.getMorphoPairsAndData();
 
-        contextVariables.morphoData = morphoData;
+        contextVariables.riskContext.morphoData = morphoData;
         contextVariables.riskContext.availablePairs = filteredPairs.sort((a, b) => a.base.localeCompare(b.base));
 
         await sleep(1000);

@@ -12,8 +12,9 @@ const defaultContextValue: AppContextType = {
   contextVariables: {
     isDataLoading: false,
     overviewData: {},
-    morphoData: {},
     riskContext: {
+      morphoData: {},
+      availablePairs: [],
       current: false,
       pair: { base: '', quote: '' },
       LTV: 0,
