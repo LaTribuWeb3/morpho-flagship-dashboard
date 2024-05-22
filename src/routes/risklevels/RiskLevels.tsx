@@ -23,6 +23,7 @@ import { AppContextType } from '../../models/Context';
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [supplyCapUsd, setSupplyCapUsd] = useState<number | undefined>(undefined);
@@ -33,7 +34,6 @@ export default function RiskLevels() {
   const [selectedLTV, setSelectedLTV] = useState<string>(MORPHO_RISK_PARAMETERS_ARRAY[1].ltv.toString());
   const [selectedBonus, setSelectedBonus] = useState<number>(MORPHO_RISK_PARAMETERS_ARRAY[1].bonus);
   const { contextVariables, setContextVariables } = useContext<AppContextType>(AppContext);
-  const selectedPair = contextVariables.riskContext.selectedPair;
   const pathName = useLocation().pathname;
   const navPair = pathName.split('/')[2]
     ? { base: pathName.split('/')[2].split('-')[0], quote: pathName.split('/')[2].split('-')[1] }
@@ -46,7 +46,7 @@ export default function RiskLevels() {
     setOpenAlert(false);
   };
   const handleChangePair = (event: SelectChangeEvent) => {
-    contextVariables.riskContext.selectedPair = { base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] };
+    setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
     const matchingSubMarket: SubMarket | undefined = contextVariables.riskContext.morphoData[event.target.value.split('/')[1]].subMarkets.find(
       (subMarket) => subMarket.base === event.target.value.split('/')[0]
     );
@@ -78,13 +78,13 @@ export default function RiskLevels() {
       if (tokenPrice) {
         setSupplyCapUsd(Number(event.target.value) * tokenPrice);
       }
-      if (contextVariables.riskContext.selectedPair && parameters && tokenPrice) {
+      if (selectedPair && parameters && tokenPrice) {
         setContextVariables({
           ...contextVariables,
           riskContext: {
             ...contextVariables.riskContext,
             current: true,
-            pair: contextVariables.riskContext.selectedPair,
+            pair: selectedPair,
             LTV: parameters.ltv,
             liquidationBonus: parameters.bonus,
             supplyCapInLoanAsset: Number(event.target.value),
@@ -101,13 +101,13 @@ export default function RiskLevels() {
     if (foundParam) {
       setSelectedBonus(foundParam.bonus);
       setParameters(foundParam);
-      if (contextVariables.riskContext.selectedPair && supplyCapInKind && tokenPrice) {
+      if (selectedPair && supplyCapInKind && tokenPrice) {
         setContextVariables({
           ...contextVariables,
           riskContext: {
             ...contextVariables.riskContext,
             current: true,
-            pair: contextVariables.riskContext.selectedPair,
+            pair: selectedPair,
             LTV: foundParam.ltv,
             liquidationBonus: foundParam.bonus,
             supplyCapInLoanAsset: supplyCapInKind,
@@ -127,7 +127,7 @@ export default function RiskLevels() {
       try {
 
         if (navPair && contextVariables.riskContext.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
-          contextVariables.riskContext.selectedPair = navPair;
+          setSelectedPair(navPair);
           if (navLTV) {
             setSelectedLTV(navLTV);
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === navLTV);
@@ -163,7 +163,7 @@ export default function RiskLevels() {
               base === contextVariables.riskContext.pair.base && quote === contextVariables.riskContext.pair.quote
           )
         ) {
-          contextVariables.riskContext.selectedPair = contextVariables.riskContext.pair;
+          setSelectedPair(contextVariables.riskContext.pair);
           setSelectedLTV(contextVariables.riskContext.LTV.toString());
           setSelectedBonus(contextVariables.riskContext.liquidationBonus);
           setParameters({
@@ -188,7 +188,7 @@ export default function RiskLevels() {
           const firstMarket = contextVariables.riskContext.morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
           const pairToSet = { base: firstSubMarket.base, quote: firstMarketKey };
-          contextVariables.riskContext.selectedPair = pairToSet;
+          setSelectedPair(pairToSet);
           setSelectedLTV(firstSubMarket.LTV.toString());
           setSelectedBonus(firstSubMarket.liquidationBonus * 10000);
           setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 });
@@ -213,18 +213,14 @@ export default function RiskLevels() {
     fetchData()
       .then(() => setIsLoading(false))
       .catch(console.error);
-  }, [contextVariables, navBasePrice, navLTV, navPair, navSupplyCap, setContextVariables]);
+  }, []);
 
-  if (!contextVariables.riskContext.selectedPair || !tokenPrice || !supplyCapUsd || !baseTokenPrice) {
-    console.log("Returning only skeleton");
+  if (!selectedPair || !tokenPrice || !supplyCapUsd || !baseTokenPrice) {
     return <RiskLevelGraphsSkeleton />;
   }
-
-  console.log("Rendering risk level screen");
-
   return (
     <Box sx={{ mt: 10 }}>
-      {contextVariables.isDataLoading ? (
+      {isLoading ? (
         <RiskLevelGraphsSkeleton />
       ) : (
         <Grid container spacing={1} alignItems="baseline" justifyContent="center">
@@ -243,7 +239,7 @@ export default function RiskLevels() {
                 labelId="pair-select-label"
                 id="pair-select"
                 label="Pair"
-                value={`${contextVariables.riskContext.selectedPair.base}/${contextVariables.riskContext.selectedPair.quote}`}
+                value={`${selectedPair.base}/${selectedPair.quote}`}
                 onChange={handleChangePair}
               >
                 {contextVariables.riskContext.availablePairs.map((pair, index) => (
@@ -319,7 +315,7 @@ export default function RiskLevels() {
               required
               id="supply-cap-input"
               type="number"
-              label={`Supply Cap in ${contextVariables.riskContext.selectedPair.quote}`}
+              label={`Supply Cap in ${selectedPair.quote}`}
               value={supplyCapInKind}
               onChange={handleChangeSupplyCap}
             />
@@ -327,7 +323,7 @@ export default function RiskLevels() {
           </Grid>
           <Grid item xs={12} lg={10}>
             <RiskLevelGraphs
-              pair={contextVariables.riskContext.selectedPair}
+              pair={selectedPair}
               parameters={parameters}
               supplyCap={supplyCapUsd}
               quotePrice={tokenPrice}

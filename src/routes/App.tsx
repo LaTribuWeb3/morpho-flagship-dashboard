@@ -13,7 +13,6 @@ const defaultContextValue: AppContextType = {
     isDataLoading: false,
     overviewData: {},
     riskContext: {
-      selectedPair: { base: '', quote: '' },
       morphoData: {},
       availablePairs: [],
       current: false,
@@ -40,7 +39,6 @@ function App() {
     isDataLoading: false,
     overviewData: {},
     riskContext: {
-      selectedPair: { base: '', quote: '' },
       morphoData: {},
       current: false,
       pair: { base: '', quote: '' },

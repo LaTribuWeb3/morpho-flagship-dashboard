@@ -5,7 +5,6 @@ export interface ContextVariables {
   overviewData: OverviewData;
   isDataLoading: boolean;
   riskContext: {
-    selectedPair: { base: string; quote: string; };
     morphoData: OverviewData;
     current: boolean;
     pair: Pair;
