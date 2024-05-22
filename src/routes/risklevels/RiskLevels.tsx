@@ -120,13 +120,15 @@ export default function RiskLevels() {
 
   //// useEffect to load data
   useEffect(() => {
+    console.log("RiskLevel: Is Data Loading true")
+    console.log(contextVariables)
     setIsLoading(true);
     // Define an asynchronous function
     async function fetchData() {
       try {
-
-        if (navPair && contextVariables.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
+        if (navPair && contextVariables.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote) && contextVariables.isDataLoading) {
           setSelectedPair(navPair);
+          
           if (navLTV) {
             setSelectedLTV(navLTV);
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === navLTV);
@@ -162,6 +164,7 @@ export default function RiskLevels() {
               base === contextVariables.riskContext.pair.base && quote === contextVariables.riskContext.pair.quote
           )
         ) {
+          console.log("Inside the else if");
           setSelectedPair(contextVariables.riskContext.pair);
           setSelectedLTV(contextVariables.riskContext.LTV.toString());
           setSelectedBonus(contextVariables.riskContext.liquidationBonus);
@@ -183,6 +186,7 @@ export default function RiskLevels() {
             setBaseTokenPrice(morphoMarketForContext?.basePrice);
           }
         } else if (contextVariables.availablePairs.length > 0) {
+          console.log("Inside the second else if");
           const firstMarketKey = Object.keys(contextVariables.riskContext.morphoData)[0];
           const firstMarket = contextVariables.riskContext.morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
@@ -202,6 +206,7 @@ export default function RiskLevels() {
         console.error('Error fetching data:', error);
         setOpenAlert(true);
         setIsLoading(false);
+        console.log("RiskLevel: Is Data Loading false")
         if (error instanceof Error) {
           setAlertMsg(`Error fetching data: ${error.toString()}`);
         } else {
@@ -210,9 +215,14 @@ export default function RiskLevels() {
       }
     }
     fetchData()
-      .then(() => setIsLoading(false))
+      .then(() => {
+        console.log("RiskLevel: Is Data Loading false")
+        setIsLoading(false)
+      })
       .catch(console.error);
-  }, []);
+  }, [contextVariables.isDataLoading, contextVariables.availablePairs]);
+
+  console.log("RiskLevel Debug:", selectedPair, tokenPrice, supplyCapUsd, baseTokenPrice, isLoading);
 
   if (!selectedPair || !tokenPrice || !supplyCapUsd || !baseTokenPrice) {
     return <RiskLevelGraphsSkeleton />;

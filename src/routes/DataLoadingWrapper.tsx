@@ -19,6 +19,7 @@ export default function DataLoadingWrapper() {
     async function fetchData() {
       try {
         contextVariables.isDataLoading = true;
+        console.log("Wrapper: Is Data Loading true")
         setContextVariables(contextVariables);
 
         const overviewData: OverviewData = await DataService.GetOverview();
@@ -37,8 +38,10 @@ export default function DataLoadingWrapper() {
 
         await sleep(1000);
         contextVariables.isDataLoading = false;
+        console.log("Wrapper: Is Data Loading false")
       } catch (error) {
         contextVariables.isDataLoading = false;
+        console.log("Wrapper: Is Data Loading false")
         console.error('Error fetching data:', error);
         if (error instanceof Error) {
           console.log('Error fetching data:', error.toString());
