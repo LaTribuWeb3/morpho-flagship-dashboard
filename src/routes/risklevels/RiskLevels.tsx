@@ -47,7 +47,7 @@ export default function RiskLevels() {
   };
   const handleChangePair = (event: SelectChangeEvent) => {
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
-    const matchingSubMarket: SubMarket | undefined = contextVariables.morphoData[event.target.value.split('/')[1]].subMarkets.find(
+    const matchingSubMarket: SubMarket | undefined = contextVariables.riskContext.morphoData[event.target.value.split('/')[1]].subMarkets.find(
       (subMarket) => subMarket.base === event.target.value.split('/')[0]
     );
     if (matchingSubMarket) {
@@ -56,7 +56,7 @@ export default function RiskLevels() {
       setParameters({ ltv: matchingSubMarket.LTV, bonus: matchingSubMarket.liquidationBonus * 10000 });
       setSupplyCapUsd(matchingSubMarket.supplyCapUsd);
       setSupplyCapInKind(matchingSubMarket.supplyCapInKind);
-      setTokenPrice(contextVariables.morphoData[event.target.value.split('/')[1]].loanAssetPrice);
+      setTokenPrice(contextVariables.riskContext.morphoData[event.target.value.split('/')[1]].loanAssetPrice);
       setContextVariables({
         ...contextVariables,
         riskContext: {
@@ -66,7 +66,7 @@ export default function RiskLevels() {
           LTV: matchingSubMarket.LTV,
           liquidationBonus: matchingSubMarket.liquidationBonus * 10000,
           supplyCapInLoanAsset: matchingSubMarket.supplyCapInKind,
-          loanAssetPrice: contextVariables.morphoData[event.target.value.split('/')[1]].loanAssetPrice
+          loanAssetPrice: contextVariables.riskContext.morphoData[event.target.value.split('/')[1]].loanAssetPrice
         },
         datasourcesContext: contextVariables.datasourcesContext
       });
@@ -152,7 +152,7 @@ export default function RiskLevels() {
                 });
               }
               setTokenPrice(navBasePrice);
-              const morphoMarketForContext = contextVariables.morphoData[navPair.quote].subMarkets.find(_ => _.LTV == foundParam.ltv && _.base == navPair.base);
+              const morphoMarketForContext = contextVariables.riskContext.morphoData[navPair.quote].subMarkets.find(_ => _.LTV == foundParam.ltv && _.base == navPair.base);
               setBaseTokenPrice(morphoMarketForContext?.basePrice);
             }
           }
@@ -175,17 +175,17 @@ export default function RiskLevels() {
           );
           setSupplyCapInKind(contextVariables.riskContext.supplyCapInLoanAsset);
           setTokenPrice(contextVariables.riskContext.loanAssetPrice);
-          let morphoMarketForContext = contextVariables.morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
+          let morphoMarketForContext = contextVariables.riskContext.morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.LTV == contextVariables.riskContext.LTV && _.base == contextVariables.riskContext.pair.base);
 
           if (morphoMarketForContext) {
             setBaseTokenPrice(morphoMarketForContext.basePrice);
           } else {
-            morphoMarketForContext = contextVariables.morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
+            morphoMarketForContext = contextVariables.riskContext.morphoData[contextVariables.riskContext.pair.quote].subMarkets.find(_ => _.base == contextVariables.riskContext.pair.base);
             setBaseTokenPrice(morphoMarketForContext?.basePrice);
           }
         } else if (contextVariables.riskContext.availablePairs.length > 0) {
-          const firstMarketKey = Object.keys(contextVariables.morphoData)[0];
-          const firstMarket = contextVariables.morphoData[firstMarketKey];
+          const firstMarketKey = Object.keys(contextVariables.riskContext.morphoData)[0];
+          const firstMarket = contextVariables.riskContext.morphoData[firstMarketKey];
           const firstSubMarket = firstMarket.subMarkets[0];
           const pairToSet = { base: firstSubMarket.base, quote: firstMarketKey };
           setSelectedPair(pairToSet);
@@ -194,7 +194,7 @@ export default function RiskLevels() {
           setParameters({ ltv: firstSubMarket.LTV, bonus: firstSubMarket.liquidationBonus * 10000 });
           setSupplyCapUsd(firstSubMarket.supplyCapUsd);
           setSupplyCapInKind(firstSubMarket.supplyCapInKind);
-          setTokenPrice(contextVariables.morphoData[firstMarketKey].loanAssetPrice);
+          setTokenPrice(contextVariables.riskContext.morphoData[firstMarketKey].loanAssetPrice);
           setBaseTokenPrice(firstSubMarket.basePrice);
         }
 

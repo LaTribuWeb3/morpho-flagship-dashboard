@@ -37,8 +37,8 @@ function App() {
   const [contextVariables, setContextVariables] = React.useState<ContextVariables>({
     isDataLoading: false,
     overviewData: {},
-    morphoData: {},
     riskContext: {
+      morphoData: {},
       current: false,
       pair: { base: '', quote: '' },
       LTV: 0,
