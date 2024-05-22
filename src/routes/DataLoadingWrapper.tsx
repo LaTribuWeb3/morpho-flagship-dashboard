@@ -29,6 +29,7 @@ export default function DataLoadingWrapper() {
         await sleep(1000);
         contextVariables.isDataLoading = false;
       } catch (error) {
+        contextVariables.isDataLoading = false;
         console.error('Error fetching data:', error);
         if (error instanceof Error) {
           console.log('Error fetching data:', error.toString());
@@ -43,22 +44,7 @@ export default function DataLoadingWrapper() {
         setContextVariables(contextVariables);
       })
       .catch(console.error);
-  }, [setContextVariables,
-    contextVariables.morphoData,
-    contextVariables.overviewData,
-    contextVariables.riskContext,
-    contextVariables.riskContext.current,
-    contextVariables.riskContext.pair,
-    contextVariables.riskContext.LTV,
-    contextVariables.riskContext.liquidationBonus,
-    contextVariables.riskContext.supplyCapInLoanAsset,
-    contextVariables.riskContext.loanAssetPrice,
-    contextVariables.datasourcesContext,
-    contextVariables.datasourcesContext.current,
-    contextVariables.datasourcesContext.pair,
-    contextVariables.datasourcesContext.datasource,
-    contextVariables.datasourcesContext.slippage
-  ]);
+  }, [setContextVariables, contextVariables]);
 
   return (
     <Box
