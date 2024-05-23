@@ -120,11 +120,16 @@ export default function RiskLevels() {
 
   //// useEffect to load data
   useEffect(() => {
-    console.log("RiskLevel: Is Data Loading true")
-    console.log(contextVariables)
-    setIsLoading(true);
     // Define an asynchronous function
     async function fetchData() {
+      console.log("RiskLevel: Is Data Loading true")
+      console.log(contextVariables)
+      setIsLoading(true);
+
+      while(contextVariables.isDataLoading) {
+        await sleep(100);
+      }
+
       try {
         if (navPair && contextVariables.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote) && contextVariables.isDataLoading) {
           setSelectedPair(navPair);
