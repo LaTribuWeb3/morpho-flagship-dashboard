@@ -60,6 +60,23 @@ export default class DataService {
     return overviewData;
   }
 
+  static async getMorphoPairsAndData(): Promise<{ filteredPairs: Pair[]; morphoData: OverviewData; }> {
+    const morphoData: OverviewData = await DataService.GetOverview();
+    const morphoPairs: string[] = [];
+    for (const market in morphoData) {
+      morphoData[market].subMarkets.forEach((subMarket) => {
+        morphoPairs.push(`${subMarket.base}/${market}`);
+      });
+    }
+
+    const data = await DataService.GetAvailablePairs('all');
+    const filteredPairs = data
+      .filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`))
+      .sort((a, b) => a.base.localeCompare(b.base));
+
+    return { filteredPairs, morphoData };
+  }
+
   static async GetAvailablePairs(platform: string): Promise<Pair[]> {
     console.log(`getting available pairs for ${platform}`);
     const pairLoadingFunction = async () => {

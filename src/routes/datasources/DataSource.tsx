@@ -1,26 +1,23 @@
-import Box from '@mui/material/Box';
-import { useContext, useEffect, useState } from 'react';
-import DataService from '../../services/DataService';
-import { Pair } from '../../models/ApiData';
 import {
+  FormControl,
   Grid,
+  InputLabel,
   LinearProgress,
   MenuItem,
   Select,
   SelectChangeEvent,
   Skeleton,
-  Typography,
-  FormControl,
-  InputLabel
+  Typography
 } from '@mui/material';
+import Box from '@mui/material/Box';
+import { useContext, useEffect, useState } from 'react';
 import { SimpleAlert } from '../../components/SimpleAlert';
-import { SLIPPAGES_BPS } from '../../utils/Constants';
-import { DataSourceGraphs } from './DataSourceGraphs';
-import { sleep } from '../../utils/Utils';
-import { DATA_SOURCES, DATA_SOURCES_MAP } from '../../utils/Constants';
+import { Pair } from '../../models/ApiData';
 import { AppContextType } from '../../models/Context';
+import { DATA_SOURCES, DATA_SOURCES_MAP, SLIPPAGES_BPS } from '../../utils/Constants';
+import { sleep } from '../../utils/Utils';
 import { AppContext } from '../App';
-import { OverviewData } from '../../models/OverviewData';
+import { DataSourceGraphs } from './DataSourceGraphs';
 
 function DataSourceSkeleton() {
   return (
@@ -41,7 +38,6 @@ function DataSourceSkeleton() {
 
 export default function DataSource() {
   const [isLoading, setIsLoading] = useState(true);
-  const [availablePairs, setAvailablePairs] = useState<Pair[]>([]);
   const [selectedSlippage, setSelectedSlippage] = useState(500);
   const [selectedPair, setSelectedPair] = useState<Pair>();
   const [openAlert, setOpenAlert] = useState(false);
@@ -57,6 +53,9 @@ export default function DataSource() {
     setPlatform(event.target.value);
     if (selectedPair) {
       setContextVariables({
+        overviewData: {},
+        isDataLoading: false,
+        availablePairs: contextVariables.availablePairs,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -72,6 +71,9 @@ export default function DataSource() {
     setSelectedSlippage(Number(event.target.value));
     if (selectedPair) {
       setContextVariables({
+        overviewData: {},
+        isDataLoading: false,
+        availablePairs: contextVariables.availablePairs,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -87,6 +89,9 @@ export default function DataSource() {
     setSelectedPair({ base: event.target.value.split('/')[0], quote: event.target.value.split('/')[1] });
     if (platform) {
       setContextVariables({
+        overviewData: {},
+        isDataLoading: false,
+        availablePairs: contextVariables.availablePairs,
         riskContext: contextVariables.riskContext,
         datasourcesContext: {
           current: true,
@@ -103,22 +108,10 @@ export default function DataSource() {
     // Define an asynchronous function
     async function fetchData() {
       try {
-        const data = await DataService.GetAvailablePairs(platform);
-        const morphoData: OverviewData = await DataService.GetOverview();
-        const morphoPairs: string[] = [];
-        for (const market in morphoData) {
-          morphoData[market].subMarkets.forEach((subMarket) => {
-            morphoPairs.push(`${subMarket.base}/${market}`);
-          });
-        }
-        const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
-        setAvailablePairs(filteredPairs.sort((a, b) => a.base.localeCompare(b.base)));
-
-
         const oldPair = selectedPair;
         if (
           contextVariables.datasourcesContext.current &&
-          data.some(
+          contextVariables.availablePairs.some(
             (_) =>
               _.base == contextVariables.datasourcesContext.pair.base &&
               _.quote == contextVariables.datasourcesContext.pair.quote
@@ -127,10 +120,10 @@ export default function DataSource() {
           setSelectedPair(contextVariables.datasourcesContext.pair);
           setSelectedSlippage(contextVariables.datasourcesContext.slippage);
           setPlatform(contextVariables.datasourcesContext.datasource);
-        } else if (oldPair && data.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
+        } else if (oldPair && contextVariables.availablePairs.some((_) => _.base == oldPair.base && _.quote == oldPair.quote)) {
           setSelectedPair(oldPair);
         } else {
-          setSelectedPair(filteredPairs[0]);
+          setSelectedPair(contextVariables.availablePairs[0]);
         }
         await sleep(1); // without this sleep, update the graph before changing the selected pair. so let it here
       } catch (error) {
@@ -195,7 +188,7 @@ export default function DataSource() {
               label="Pair"
               onChange={handleChangePair}
             >
-              {availablePairs.map((pair, index) => (
+              {contextVariables.availablePairs.map((pair, index) => (
                 <MenuItem key={index} value={`${pair.base}/${pair.quote}`}>
                   {`${pair.base}/${pair.quote}`}
                 </MenuItem>

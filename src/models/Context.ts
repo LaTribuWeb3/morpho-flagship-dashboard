@@ -1,7 +1,12 @@
 import { Pair } from './ApiData';
+import { OverviewData } from './OverviewData';
 
 export interface ContextVariables {
+  overviewData: OverviewData;
+  isDataLoading: boolean;
+  availablePairs: Pair[];
   riskContext: {
+    morphoData: OverviewData;
     current: boolean;
     pair: Pair;
     LTV: number;
