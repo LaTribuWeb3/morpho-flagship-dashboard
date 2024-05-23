@@ -7,18 +7,24 @@ import {
   Select,
   SelectChangeEvent,
   TextField,
-  Typography
+  Typography,
 } from '@mui/material';
 import { useContext, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SimpleAlert } from '../../components/SimpleAlert';
 import { Pair } from '../../models/ApiData';
-import { AppContextType } from '../../models/Context';
+import { AppContextType, ContextVariables } from '../../models/Context';
 import { SubMarket } from '../../models/OverviewData';
 import { MORPHO_RISK_PARAMETERS_ARRAY } from '../../utils/Constants';
 import { FriendlyFormatNumber, sleep } from '../../utils/Utils';
 import { AppContext } from '../App';
 import { RiskLevelGraphs, RiskLevelGraphsSkeleton } from './RiskLevelGraph';
+import { debounce } from 'lodash';
+
+interface Parameters {
+  ltv: number;
+  bonus: number;
+}
 
 export default function RiskLevels() {
   const [isLoading, setIsLoading] = useState(true);
@@ -71,29 +77,67 @@ export default function RiskLevels() {
       });
     }
   };
-  const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target && event.target.value) {
-      setSupplyCapInKind(Number(event.target.value));
+
+  // Type for the debounced function
+  type DebouncedHandleChangeSupplyCapType = (
+    value: string,
+    tokenPrice: number | undefined,
+    selectedPair: Pair | undefined,
+    parameters: Parameters | undefined,
+    contextVariables: ContextVariables,
+    setContextVariables: React.Dispatch<React.SetStateAction<ContextVariables>>,
+    setSupplyCapInKind: React.Dispatch<React.SetStateAction<number | undefined>>,
+    setSupplyCapUsd: React.Dispatch<React.SetStateAction<number | undefined>>
+  ) => void;
+
+
+  // Define the debounced function
+  const debouncedHandleChangeSupplyCap: DebouncedHandleChangeSupplyCapType = debounce(
+    (
+      value: string,
+      tokenPrice: number | undefined,
+      selectedPair: { base: string; quote: string } | undefined,
+      parameters: Parameters | undefined,
+      contextVariables: ContextVariables,
+      setContextVariables: React.Dispatch<React.SetStateAction<ContextVariables>>,
+      setSupplyCapInKind: React.Dispatch<React.SetStateAction<number | undefined>>,
+      setSupplyCapUsd: React.Dispatch<React.SetStateAction<number | undefined>>
+    ) => {
+      const numericValue = Number(value);
+      setSupplyCapInKind(numericValue);
       if (tokenPrice) {
-        setSupplyCapUsd(Number(event.target.value) * tokenPrice);
+        setSupplyCapUsd(numericValue * tokenPrice);
       }
       if (selectedPair && parameters && tokenPrice) {
         setContextVariables({
           ...contextVariables,
           riskContext: {
             ...contextVariables.riskContext,
-            current: true,
-            pair: selectedPair,
-            LTV: parameters.ltv,
-            liquidationBonus: parameters.bonus,
-            supplyCapInLoanAsset: Number(event.target.value),
-            loanAssetPrice: tokenPrice
-          },
-          datasourcesContext: contextVariables.datasourcesContext
+            pair: selectedPair
+          }
         });
       }
+    },
+    300 // Adjust the delay as needed
+  );
+
+  // Wrap the handleChangeSupplyCap function to pass necessary variables to the debounced function
+  const handleChangeSupplyCap = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    if (value) {
+      debouncedHandleChangeSupplyCap(
+        value,
+        tokenPrice,
+        selectedPair,
+        parameters,
+        contextVariables,
+        setContextVariables,
+        setSupplyCapInKind,
+        setSupplyCapUsd
+      );
     }
   };
+
   const handleLTVChange = (event: SelectChangeEvent) => {
     setSelectedLTV(event.target.value);
     const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === event.target.value);
@@ -126,14 +170,14 @@ export default function RiskLevels() {
       console.log(contextVariables)
       setIsLoading(true);
 
-      while(contextVariables.isDataLoading) {
+      while (contextVariables.isDataLoading) {
         await sleep(100);
       }
 
       try {
-        if (navPair && contextVariables.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote) && contextVariables.isDataLoading) {
+        if (navPair && contextVariables.availablePairs.some(({ base, quote }) => base === navPair.base && quote === navPair.quote)) {
           setSelectedPair(navPair);
-          
+
           if (navLTV) {
             setSelectedLTV(navLTV);
             const foundParam = MORPHO_RISK_PARAMETERS_ARRAY.find((param) => param.ltv.toString() === navLTV);
@@ -225,7 +269,7 @@ export default function RiskLevels() {
         setIsLoading(false)
       })
       .catch(console.error);
-  }, [contextVariables.isDataLoading, contextVariables.availablePairs]);
+  }, []);
 
   console.log("RiskLevel Debug:", selectedPair, tokenPrice, supplyCapUsd, baseTokenPrice, isLoading);
 
