@@ -70,7 +70,9 @@ export default class DataService {
     }
 
     const data = await DataService.GetAvailablePairs('all');
-    const filteredPairs = data.filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`));
+    const filteredPairs = data
+      .filter(({ base, quote }) => morphoPairs.includes(`${base}/${quote}`))
+      .sort((a, b) => a.base.localeCompare(b.base));
 
     return { filteredPairs, morphoData };
   }
